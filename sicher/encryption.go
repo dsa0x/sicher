@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"io"
+	"log"
 )
 
 func Encrypt(key string, fileData []byte) (nonce []byte, ciphertext []byte) {
@@ -33,17 +34,17 @@ func Decrypt(key string, nonce []byte, text []byte) (plaintext []byte) {
 	hKey, _ := hex.DecodeString(key)
 	block, err := aes.NewCipher(hKey)
 	if err != nil {
-		panic(err.Error())
+		log.Println("Error decrypting file:", err)
 	}
 
 	aesgcm, err := cipher.NewGCM(block)
 	if err != nil {
-		panic(err.Error())
+		log.Println("Error decrypting file:", err)
 	}
 
 	plaintext, err = aesgcm.Open(nil, nonce, text, nil)
 	if err != nil {
-		panic(err.Error())
+		log.Println("Error decrypting file:", err)
 	}
 	return
 }

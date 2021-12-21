@@ -8,11 +8,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var sich = sicher.New()
+// use default values
+var sich = &sicher.Sicher{Environment: "development", Path: "."}
 
 var rootCmd = &cobra.Command{
 	Use:   "sicher",
-	Short: "Sicher is a tool for managing your Go projects",
+	Short: "sicher is a tool for encrypting and managing environment variables",
+}
+
+func init() {
+	rootCmd.Example = `
+	# Initialize sicher in your project
+	sicher init --env development --path .
+
+	# Edit environment variables
+	sicher edit --env development --path . --editor vim
+	`
 }
 
 func Execute() {
@@ -20,11 +31,8 @@ func Execute() {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
-
-	sich.SetCredentials()
-	fmt.Println(os.Getenv("base_key"))
 }
 
-func testEnv() {
-	fmt.Println(os.Getenv("mongodb"), "ENV")
+func LoadEnv() {
+	sich.LoadEnv()
 }

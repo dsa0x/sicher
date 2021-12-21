@@ -16,10 +16,10 @@ func init() {
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initialize sicher in your project",
-	Long:  `Initialize a new project`,
+	Short: "initialize sicher in your project",
 	Run: func(cmd *cobra.Command, args []string) {
 		sich.Environment = environment
-		sich.Initialize(path)
+		sich.Path = path
+		sich.Initialize()
 	},
 }

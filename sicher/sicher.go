@@ -28,31 +28,32 @@ func Execute() {
 }
 
 type Sicher struct {
-	path        string
+	Path        string
 	Environment string
 	data        map[string]interface{} `yaml:"data"`
 }
 
-func New() *Sicher {
-	return &Sicher{}
+func New(environment, path string) *Sicher {
+	return &Sicher{Path: path, Environment: environment}
 }
 
 // Initialize initializes the sicher project and creates the necessary files
-func (s *Sicher) Initialize(path ...string) {
+func (s *Sicher) Initialize() {
 	key := generateKey()
 
-	if len(path) > 0 {
-		dir, _ := filepath.Abs(path[0])
-		s.path = dir + "/"
+	if s.Path != "" {
+		dir, _ := filepath.Abs(s.Path)
+		s.Path = dir + "/"
 	}
 
 	if s.Environment == "" {
 		s.Environment = "development"
 	}
 	// create the key file if it doesn't exist
-	keyFile, err := os.OpenFile(fmt.Sprintf("%s%s.key", s.path, s.Environment), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	keyFile, err := os.OpenFile(fmt.Sprintf("%s%s.key", s.Path, s.Environment), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		return
 	}
 	defer keyFile.Close()
 
@@ -65,7 +66,8 @@ func (s *Sicher) Initialize(path ...string) {
 	if keyFileStats.Size() < 1 {
 		_, err = keyFile.WriteString(key)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			return
 		}
 		encFileFlag = os.O_CREATE | os.O_RDWR | os.O_TRUNC
 	} else {
@@ -75,9 +77,10 @@ func (s *Sicher) Initialize(path ...string) {
 
 	// create the encrypted credentials file if it doesn't exist
 	// the credentials file is truncated if the keyfile is new
-	encFile, err := os.OpenFile(fmt.Sprintf("%s%s.enc", s.path, s.Environment), encFileFlag, 0600)
+	encFile, err := os.OpenFile(fmt.Sprintf("%s%s.enc", s.Path, s.Environment), encFileFlag, 0600)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	defer encFile.Close()
 
@@ -89,7 +92,8 @@ func (s *Sicher) Initialize(path ...string) {
 		nonce, ciphertext := Encrypt(key, initFile)
 		_, err = encFile.WriteString(fmt.Sprintf("%x\n%x", ciphertext, nonce))
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			return
 		}
 	}
 
@@ -107,11 +111,11 @@ func (s *Sicher) Initialize(path ...string) {
 	for err == nil {
 		str, _, err := fr.ReadLine()
 		if err != nil && err != io.EOF {
-			log.Fatalln(err)
+			log.Println(err)
 			return
 		}
 
-		if string(str) == fmt.Sprintf("%s%s.key", s.path, s.Environment) {
+		if string(str) == fmt.Sprintf("%s%s.key", s.Path, s.Environment) {
 			return
 		}
 
@@ -120,7 +124,7 @@ func (s *Sicher) Initialize(path ...string) {
 		}
 	}
 
-	f.Write([]byte(fmt.Sprintf("\n%s%s.key", s.path, s.Environment)))
+	f.Write([]byte(fmt.Sprintf("\n%s%s.key", s.Path, s.Environment)))
 }
 
 // Edit opens the encrypted credentials file. Default editor is vim.
@@ -145,7 +149,7 @@ func (s *Sicher) Edit(editor ...string) {
 	// read the encryption key
 	key, err := os.ReadFile(fmt.Sprintf("%s.key", s.Environment))
 	if err != nil {
-		log.Printf("Encryption key (%s.key) is not available. Create one by running the cli with init flag.", s.Environment)
+		log.Printf("Encryption key(%s.key) is not available. Create one by running the cli with init flag.", s.Environment)
 		return
 	}
 	strKey := string(key)
@@ -221,7 +225,7 @@ func (s *Sicher) Edit(editor ...string) {
 
 }
 
-func (s *Sicher) SetCredentials() {
+func (s *Sicher) LoadEnv() {
 	s.configure()
 	s.setEnv()
 }
