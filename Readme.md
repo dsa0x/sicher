@@ -73,9 +73,9 @@ func main() {
 }
 ```
 
-The `LoadEnv` function will load the credentials from the encrypted file `environment.enc` and decrypt it with the key file `environment.key`, and unmarshal the result into the given config object. The object can be of type `struct` or `map[string]string`
+The `LoadEnv` function will load the credentials from the encrypted file `{environment.enc}`, decrypt it with the key file `{environment.key}`, and then unmarshal the result into the given config object. The example above uses a `struct`, but the object can be of type `struct` or `map[string]string`.
 
-An example of the temporary env file:
+All env files should be in the format like the example below:
 
 ```
 PORT=8080
@@ -86,6 +86,7 @@ APP_URL=http://localhost:8080
 
 ### Todo
 
-- Add support for other types of encryption
+
 - Make addition to the `.gitignore` file optional
-- When a user wants to initialize, add warning if encrypted file already exists, but no key file
+- When a user wants to initialize sicher, add a warning if anencrypted file already exists, but there is no no key file
+- Add support for other types of encryption
