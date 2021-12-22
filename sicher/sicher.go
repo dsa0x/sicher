@@ -247,22 +247,16 @@ func (s *Sicher) LoadEnv(prefix string, data interface{}) error {
 		return errors.New("config must be a type of struct or map")
 	}
 
-	r := regexp.MustCompile(`(?:required:"(?P<required>\w+)")|(?:envconfig:"(?P<key>\w+)")`)
-
 	for i := 0; i < d.NumField(); i++ {
 		field := d.Field(i)
-		tag := d.Type().Field(i).Tag
-		str := r.FindAllStringSubmatch(string(tag), -1)
-
-		mp := make(map[string]string)
-		for _, v := range str {
-			getParams(r.SubexpNames(), v, mp)
-		}
-		tagName := prefix + mp["key"]
+		fieldType := d.Type().Field(i)
+		isRequired := fieldType.Tag.Get("required")
+		key := fieldType.Tag.Get("envconfig")
+		tagName := prefix + key
 
 		envVar := os.Getenv(tagName)
-		if mp["required"] == "true" && envVar == "" {
-			return errors.New("required env variable " + mp["key"] + " is not set")
+		if isRequired == "true" && envVar == "" {
+			return errors.New("required env variable " + key + " is not set")
 		}
 
 		switch field.Kind() {
