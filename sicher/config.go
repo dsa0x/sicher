@@ -12,7 +12,8 @@ import (
 func (s *Sicher) configure() {
 
 	if s.Environment == "" {
-		s.Environment = "development"
+		fmt.Println("Environment not set")
+		return
 	}
 	// read the encryption key
 	key, err := os.ReadFile(fmt.Sprintf("%s.key", s.Environment))
