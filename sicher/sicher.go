@@ -15,6 +15,7 @@ import (
 )
 
 var delimiter = "==--=="
+var defaultEnv = "dev"
 
 type Sicher struct {
 	// Path is the path to the project. Defaults to the current directory
@@ -27,6 +28,11 @@ type Sicher struct {
 
 // New creates a new sicher struct
 func New(environment string, path ...string) *Sicher {
+
+	if environment == "" {
+		environment = defaultEnv
+	}
+
 	var _path string
 	if len(path) < 1 || path[0] == "" {
 		_path = "."
@@ -34,21 +40,13 @@ func New(environment string, path ...string) *Sicher {
 		_path = path[0]
 	}
 	_path, _ = filepath.Abs(_path)
-	return &Sicher{Path: _path, Environment: environment, data: make(map[string]string)}
+	return &Sicher{Path: _path + "/", Environment: environment, data: make(map[string]string)}
 }
 
 // Initialize initializes the sicher project and creates the necessary files
 func (s *Sicher) Initialize() {
 	key := generateKey()
 
-	if s.Path != "" {
-		dir, _ := filepath.Abs(s.Path)
-		s.Path = dir + "/"
-	}
-
-	if s.Environment == "" {
-		s.Environment = "dev"
-	}
 	// create the key file if it doesn't exist
 	keyFile, err := os.OpenFile(fmt.Sprintf("%s%s.key", s.Path, s.Environment), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
@@ -138,10 +136,6 @@ func (s *Sicher) Edit(editor ...string) {
 		editorName = editor[0]
 	} else {
 		editorName = "vim"
-	}
-
-	if s.Environment == "" {
-		s.Environment = "dev"
 	}
 
 	match, _ := regexp.MatchString("^(nano|vim|vi|)$", editorName)

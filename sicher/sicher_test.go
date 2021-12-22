@@ -8,25 +8,38 @@ import (
 	"testing"
 )
 
-func setupTest(path string) (*Sicher, string, string) {
-
-	if path == "" {
-		path = "."
-	}
-	path, _ = filepath.Abs(path)
-	s := &Sicher{
-		Path:        path,
-		Environment: "testenv",
-		data:        make(map[string]string),
-	}
-
-	return s, fmt.Sprintf("%s/%s.enc", path, s.Environment), fmt.Sprintf("%s/%s.key", path, s.Environment)
+func setupTest() (*Sicher, string, string) {
+	s := New("testenv", "../example")
+	return s, fmt.Sprintf("%s%s.enc", s.Path, s.Environment), fmt.Sprintf("%s%s.key", s.Path, s.Environment)
 
 }
 
-func TestSicherInitialization(t *testing.T) {
+func TestNewWithNoEnvironment(t *testing.T) {
+	path, _ := filepath.Abs(".")
+	path += "/"
+	s := New("")
+	if s.Path != path {
+		t.Errorf("Expected path to be %s, got %s", path, s.Path)
+	}
 
-	s, encPath, keyPath := setupTest("../example")
+	if s.Environment != defaultEnv {
+		t.Errorf("Expected environment to be set to %s if none is given, got %s", defaultEnv, s.Environment)
+	}
+
+}
+func TestNewWithEnvironment(t *testing.T) {
+	env := "testenv"
+	s := New("testenv")
+
+	if s.Environment != env {
+		t.Errorf("Expected environment to be set to %s if none is given, got %s", env, s.Environment)
+	}
+
+}
+
+func TestSicherInitialize(t *testing.T) {
+
+	s, encPath, keyPath := setupTest()
 
 	s.Initialize()
 
@@ -55,7 +68,7 @@ func TestSicherInitialization(t *testing.T) {
 
 func TestLoadEnv(t *testing.T) {
 
-	s, encPath, keyPath := setupTest("../example")
+	s, encPath, keyPath := setupTest()
 
 	s.Initialize()
 
@@ -87,5 +100,17 @@ func TestLoadEnv(t *testing.T) {
 		os.Remove(gitPath)
 		f.Close()
 	})
+
+}
+
+func TestSetEnv(t *testing.T) {
+	s, _, _ := setupTest()
+
+	s.data["PORT"] = "8080"
+	s.setEnv()
+
+	if os.Getenv("PORT") != "8080" {
+		t.Errorf("Expected environment variable %s to have been set to %s, got %s", "PORT", "8080", os.Getenv("PORT"))
+	}
 
 }

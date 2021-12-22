@@ -9,9 +9,6 @@ import (
 	"github.com/dsa0x/sicher/sicher"
 )
 
-// use default values
-var sich = &sicher.Sicher{Environment: "dev", Path: "."}
-
 var (
 	pathFlag   string
 	envFlag    string
@@ -21,10 +18,10 @@ var (
 func init() {
 	errHelp := `
 # Initialize sicher in your project
-	sicher init
+sicher init
 
 # Edit environment variables
-	sicher edit
+sicher edit
 	`
 	flag.StringVar(&pathFlag, "path", ".", "Path to the project")
 	flag.StringVar(&envFlag, "env", "dev", "Environment to use")
@@ -44,12 +41,11 @@ func Execute() {
 	}
 	command := os.Args[1]
 	flag.CommandLine.Parse(os.Args[2:])
-	sich.Environment = envFlag
-	sich.Path = pathFlag
+	s := sicher.New(envFlag, pathFlag)
 	switch command {
 	case "init":
-		sich.Initialize()
+		s.Initialize()
 	case "edit":
-		sich.Edit(editorFlag)
+		s.Edit(editorFlag)
 	}
 }
