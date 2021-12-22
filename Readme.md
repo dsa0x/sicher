@@ -10,7 +10,7 @@ Using sicher in a project creates a set of files
   - This is an encrypted file that stores the credentials. Since it is encrypted, it is safe to store these credentials in source control.
   - It it is encrypted using the [AES encryption](https://pkg.go.dev/crypto/aes) system.
 - `environment.key`
-  - This is the master key used to decrypt the encrypted credentials. This must not be committed to source control. To prevent unintentional commit, the file is appended to the `.gitignore` file.
+  - This is the master key used to decrypt the credentials. This must not be committed to source control. To prevent unintentional commit, the file is appended to the `.gitignore` file.
 
 ## Installation
 
