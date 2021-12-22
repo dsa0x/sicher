@@ -22,6 +22,8 @@ var rootCmd = &cobra.Command{
 	Short: "Sicher is a tool for managing your Go projects",
 }
 
+var delimiter = "==--=="
+
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -95,7 +97,7 @@ func (s *Sicher) Initialize() {
 	if encFileStats.Size() < 1 {
 		initFile := []byte(`base_key: test key`)
 		nonce, ciphertext := Encrypt(key, initFile)
-		_, err = encFile.WriteString(fmt.Sprintf("%x\n%x", ciphertext, nonce))
+		_, err = encFile.WriteString(fmt.Sprintf("%x%s%x", ciphertext, delimiter, nonce))
 		if err != nil {
 			log.Println(err)
 			return
@@ -225,7 +227,7 @@ func (s *Sicher) Edit(editor ...string) {
 	nonce, encrypted := Encrypt(strKey, file)
 	str := hex.EncodeToString(encrypted)
 	credFile.Truncate(0)
-	credFile.Write([]byte(fmt.Sprintf("%s\n%s", str, hex.EncodeToString(nonce))))
+	credFile.Write([]byte(fmt.Sprintf("%s%s%s", str, delimiter, hex.EncodeToString(nonce))))
 	log.Println("File encrypted and saved")
 
 }

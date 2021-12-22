@@ -33,7 +33,7 @@ func decodeFile(encFile string) (nonce []byte, fileText []byte, err error) {
 		return nil, nil, nil
 	}
 
-	resp := strings.Split(encFile, "\n")
+	resp := strings.Split(encFile, delimiter)
 	if len(resp) < 2 {
 		return nil, nil, errors.New("invalid credentials")
 	}
@@ -57,33 +57,3 @@ func generateKey() string {
 	rand.Read(key[16:])
 	return fmt.Sprintf("%x", key)
 }
-
-// // decodeFile decodes the encrypted file and writes it to the given writer
-// func decodeFile(encKey, encFile string, f io.Writer) error {
-// 	if encFile == "" {
-// 		return nil
-// 	}
-
-// 	resp := strings.Split(encFile, "\n")
-// 	if len(resp) < 2 {
-// 		return errors.New("invalid credentials")
-// 	}
-// 	nonce, err := hex.DecodeString(resp[1])
-// 	if err != nil {
-// 		log.Printf("Invalid credentials file: %s", err)
-// 		return err
-// 	}
-// 	res, err := hex.DecodeString(resp[0])
-// 	if err != nil {
-// 		log.Printf("Invalid credentials file: %s", err)
-// 		return err
-// 	}
-// 	plaintext := Decrypt(encKey, nonce, res)
-// 	_, err = f.Write(plaintext)
-// 	if err != nil {
-// 		log.Printf("Error saving credentials: %s", err)
-// 		return err
-// 	}
-
-// 	return nil
-// }
