@@ -36,6 +36,9 @@ type Sicher struct {
 }
 
 func New(environment, path string) *Sicher {
+	if path == "" {
+		path = "."
+	}
 	return &Sicher{Path: path, Environment: environment}
 }
 
