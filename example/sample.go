@@ -16,7 +16,7 @@ type Config struct {
 func Configure() {
 	var config Config
 
-	s := sicher.New("prod")
+	s := sicher.New("development")
 	err := s.LoadEnv("REG", &config)
 	if err != nil {
 		fmt.Println(err)

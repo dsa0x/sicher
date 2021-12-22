@@ -3,7 +3,6 @@ package sicher
 import (
 	"crypto/rand"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -11,12 +10,6 @@ import (
 	"strings"
 	"time"
 )
-
-func generateRandomPath() string {
-	b := make([]byte, 16)
-	rand.Read(b)
-	return os.TempDir() + base64.RawURLEncoding.EncodeToString(b)[:] + "-credentials.yml"
-}
 
 // cleanUpFile removes the given file
 func cleanUpFile(filePath string) {

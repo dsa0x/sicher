@@ -37,7 +37,7 @@ type Sicher struct {
 
 	// Environment is the environment to use. Defaults to "development"
 	Environment string
-	data        map[string]interface{} `yaml:"data"`
+	data        map[string]string `yaml:"data"`
 }
 
 // New creates a new sicher struct
@@ -46,7 +46,7 @@ func New(environment string, path ...string) *Sicher {
 	if len(path) < 1 || path[0] == "" {
 		_path = "."
 	}
-	return &Sicher{Path: _path, Environment: environment}
+	return &Sicher{Path: _path, Environment: environment, data: make(map[string]string)}
 }
 
 // Initialize initializes the sicher project and creates the necessary files
@@ -185,7 +185,7 @@ func (s *Sicher) Edit(editor ...string) {
 	enc := buf.String()
 
 	// Create a temporary file to edit the decrypted credentials
-	f, err := os.CreateTemp("", "*-credentials.yml")
+	f, err := os.CreateTemp("", "*-credentials.env")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -294,12 +294,4 @@ func (s *Sicher) LoadEnv(prefix string, data interface{}) error {
 
 	}
 	return nil
-}
-
-func getParams(keys, values []string, mp map[string]string) {
-	for i := 1; i < len(keys); i++ {
-		if values[i] != "" {
-			mp[keys[i]] = values[i]
-		}
-	}
 }
