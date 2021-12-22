@@ -1,13 +1,9 @@
 package sicher
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
-	"io"
 	"log"
 	"os"
-	"strings"
 )
 
 // configure reads the credentials file and sets the environment variables
@@ -67,27 +63,4 @@ func (s *Sicher) setEnv() {
 			log.Fatalf("Error setting environment variable key %s: %s\n", k, err)
 		}
 	}
-}
-
-// parseConfig parses the environment variable into a map
-func parseConfig(config []byte, store map[string]string) (err error) {
-	var b bytes.Buffer
-	b.Write(config)
-	sc := bufio.NewScanner(&b)
-
-	for sc.Scan() {
-		line := sc.Text()
-		cfgLine := strings.Split(line, "=")
-
-		// ignore commented lines
-		if len(cfgLine) < 2 || strings.HasPrefix(line, `#`) {
-			continue
-		}
-		store[cfgLine[0]] = strings.Join(cfgLine[1:], "")
-		if err == io.EOF {
-			return nil
-		}
-	}
-	return nil
-
 }
