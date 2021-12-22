@@ -1,9 +1,8 @@
 # Sicher
 
-Sicher is a port of Rails secret management system.
+Sicher is a port of Rails secret management system that was introduced in Rails 6.
 
-Sicher is a go module that allows storage of encrypted credentials right in VCS. The can only be decrypted by a key file which is not added to the source control.
-The file is edited in a temp file and destroyed after each edit.
+Sicher is a go module that allows storage of encrypted credentials right in VCS. The credentials can only be decrypted by a key file which is not added to the source control. The file is edited in a temp file on a local system and destroyed after each edit.
 
 Using sicher in a project creates a set of files
 
@@ -31,7 +30,7 @@ go install github.com/dsaOx/sicher/cmd/sicher
 To initialize a new sicher project,
 
 ```shell
-sicher init --env environmentname
+sicher init
 ```
 
 This will create a key file `{environment}.key` and an encrypted credentials file `{environment}.enc` in the current directory. The environment name is optional and defaults to `dev`.
@@ -83,3 +82,9 @@ MONGO_DB_URI=mongodb://localhost:27017
 MONGO_DB_NAME=sicher
 APP_URL=http://localhost:8080
 ```
+
+### Todo
+
+- Add support for other types of encryption
+- Make addition to the `.gitignore` file optional
+- When a user wants to initialize, add warning if encrypted file already exists, but no key file

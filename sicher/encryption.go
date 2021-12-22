@@ -8,6 +8,7 @@ import (
 	"io"
 )
 
+// encrypt encrypts the given plaintext with the given key and returns the ciphertext
 func encrypt(key string, fileData []byte) (nonce []byte, ciphertext []byte, err error) {
 	hKey, _ := hex.DecodeString(key)
 	block, err := aes.NewCipher(hKey)
@@ -29,7 +30,7 @@ func encrypt(key string, fileData []byte) (nonce []byte, ciphertext []byte, err 
 	return
 }
 
-func decrypt(key string, nonce []byte, text []byte) (plaintext []byte, err error) {
+func decrypt(key string, nonce, text []byte) (plaintext []byte, err error) {
 	hKey, _ := hex.DecodeString(key)
 	block, err := aes.NewCipher(hKey)
 	if err != nil {

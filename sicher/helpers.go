@@ -22,7 +22,7 @@ func cleanUpFile(filePath string) {
 	}
 }
 
-// decodeFile decodes the encrypted file and writes it to the given writer
+// decodeFile decodes the encrypted file and returns the decoded file and nonce
 func decodeFile(encFile string) (nonce []byte, fileText []byte, err error) {
 	if encFile == "" {
 		return nil, nil, nil
@@ -44,12 +44,12 @@ func decodeFile(encFile string) (nonce []byte, fileText []byte, err error) {
 	return
 }
 
-// generateKey generates a random key of 32 bytes
+// generateKey generates a random key of 32 bytes and encodes as hex string
 func generateKey() string {
 	timestamp := time.Now().UnixNano()
 	key := sha256.Sum256([]byte(fmt.Sprint(timestamp)))
 	rand.Read(key[16:])
-	return fmt.Sprintf("%x", key)
+	return hex.EncodeToString(key[:])
 }
 
 // parseConfig parses the environment variables into a map

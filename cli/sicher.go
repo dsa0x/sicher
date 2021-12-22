@@ -44,7 +44,6 @@ func Execute() {
 	}
 	command := os.Args[1]
 	flag.CommandLine.Parse(os.Args[2:])
-	fmt.Println(command, "command", pathFlag, envFlag, editorFlag)
 	sich.Environment = envFlag
 	sich.Path = pathFlag
 	switch command {

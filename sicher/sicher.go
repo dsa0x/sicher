@@ -30,7 +30,10 @@ func New(environment string, path ...string) *Sicher {
 	var _path string
 	if len(path) < 1 || path[0] == "" {
 		_path = "."
+	} else {
+		_path = path[0]
 	}
+	_path, _ = filepath.Abs(_path)
 	return &Sicher{Path: _path, Environment: environment, data: make(map[string]string)}
 }
 

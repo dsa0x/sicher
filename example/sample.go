@@ -19,7 +19,7 @@ func Configure() {
 	// cfg := make(map[string]string)
 
 	s := sicher.New("dev")
-	err := s.LoadEnv("REG", &cfg)
+	err := s.LoadEnv("", &cfg)
 	if err != nil {
 		fmt.Println(err)
 		return

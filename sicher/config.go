@@ -14,7 +14,8 @@ func (s *Sicher) configure() {
 		return
 	}
 	// read the encryption key
-	key, err := os.ReadFile(fmt.Sprintf("%s.key", s.Environment))
+	fmt.Printf("%s%s.key", s.Path, s.Environment)
+	key, err := os.ReadFile(fmt.Sprintf("%s%s.key", s.Path, s.Environment))
 	if err != nil {
 		fmt.Printf("encryption key (%s.key) is not available. Create one by running the cli with init flag.\n", s.Environment)
 		return
@@ -22,7 +23,7 @@ func (s *Sicher) configure() {
 	strKey := string(key)
 
 	// read the encrypted credentials file
-	credFile, err := os.ReadFile(fmt.Sprintf("%s.enc", s.Environment))
+	credFile, err := os.ReadFile(fmt.Sprintf("%s%s.enc", s.Path, s.Environment))
 	if err != nil {
 		fmt.Printf("encrypted credentials file (%s.enc) is not available. Create one by running the cli with init flag.\n", s.Environment)
 		return
