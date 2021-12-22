@@ -14,6 +14,7 @@ type Config struct {
 }
 
 func Configure() {
+
 	var config Config
 
 	s := sicher.New("development")
