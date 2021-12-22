@@ -3,7 +3,6 @@ package sicher
 import (
 	"bufio"
 	"bytes"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -13,6 +12,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -32,16 +32,21 @@ func Execute() {
 }
 
 type Sicher struct {
-	Path        string
+	// Path is the path to the project. Defaults to the current directory
+	Path string
+
+	// Environment is the environment to use. Defaults to "development"
 	Environment string
 	data        map[string]interface{} `yaml:"data"`
 }
 
-func New(environment, path string) *Sicher {
-	if path == "" {
-		path = "."
+// New creates a new sicher struct
+func New(environment string, path ...string) *Sicher {
+	var _path string
+	if len(path) < 1 || path[0] == "" {
+		_path = "."
 	}
-	return &Sicher{Path: path, Environment: environment}
+	return &Sicher{Path: _path, Environment: environment}
 }
 
 // Initialize initializes the sicher project and creates the necessary files
@@ -96,7 +101,11 @@ func (s *Sicher) Initialize() {
 	// if the encrypted file is new, write some random data to it
 	if encFileStats.Size() < 1 {
 		initFile := []byte(`base_key: test key`)
-		nonce, ciphertext := Encrypt(key, initFile)
+		nonce, ciphertext, err := encrypt(key, initFile)
+		if err != nil {
+			fmt.Printf("Error encrypting file: %s\n", err)
+			return
+		}
 		_, err = encFile.WriteString(fmt.Sprintf("%x%s%x", ciphertext, delimiter, nonce))
 		if err != nil {
 			log.Println(err)
@@ -134,7 +143,7 @@ func (s *Sicher) Initialize() {
 	f.Write([]byte(fmt.Sprintf("\n%s.key", s.Environment)))
 }
 
-// Edit opens the encrypted credentials file. Default editor is vim.
+// Edit opens the encrypted credentials in a temporary file for editing. Default editor is vim.
 func (s *Sicher) Edit(editor ...string) {
 	var editorName string
 	if len(editor) > 0 {
@@ -156,7 +165,7 @@ func (s *Sicher) Edit(editor ...string) {
 	// read the encryption key
 	key, err := os.ReadFile(fmt.Sprintf("%s.key", s.Environment))
 	if err != nil {
-		log.Printf("Encryption key(%s.key) is not available. Create one by running the cli with init flag.", s.Environment)
+		log.Printf("encryption key(%s.key) is not available. Create one by running the cli with init flag.\n", s.Environment)
 		return
 	}
 	strKey := string(key)
@@ -187,48 +196,58 @@ func (s *Sicher) Edit(editor ...string) {
 	// if file already exists, decode and decrypt it
 	nonce, fileText, err := decodeFile(enc)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("Error decoding encryption file: %s\n", err)
 		return
 	}
 
 	if nonce != nil && fileText != nil {
-		plaintext := Decrypt(strKey, nonce, fileText)
+		plaintext, err := decrypt(strKey, nonce, fileText)
+		if err != nil {
+			fmt.Println("Error decrypting file:", err)
+			return
+		}
 		_, err = f.Write(plaintext)
 		if err != nil {
-			log.Printf("Error saving credentials: %s", err)
+			fmt.Printf("Error saving credentials: %s \n", err)
 			return
 		}
 	}
 
 	//open decrypted file with editor
-	command := exec.Command(editorName, filePath)
-	command.Stdin = os.Stdin
-	command.Stdout = os.Stdout
-	command.Stderr = os.Stderr
+	cmd := exec.Command(editorName, filePath)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-	err = command.Start()
+	err = cmd.Start()
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 		return
 	}
 
-	err = command.Wait()
+	err = cmd.Wait()
 	if err != nil {
-		log.Printf("Error while editing %v", err)
+		fmt.Printf("Error while editing %v \n", err)
 		return
 	}
 
 	file, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 
 	//encrypt and overwrite credentials file
-	nonce, encrypted := Encrypt(strKey, file)
-	str := hex.EncodeToString(encrypted)
+	// the encrypted file is encoded in hexadecimal format
+	nonce, encrypted, err := encrypt(strKey, file)
+	if err != nil {
+		fmt.Printf("Error encrypting file: %s \n", err)
+		return
+	}
+	// str := hex.EncodeToString(encrypted)
 	credFile.Truncate(0)
-	credFile.Write([]byte(fmt.Sprintf("%s%s%s", str, delimiter, hex.EncodeToString(nonce))))
-	log.Println("File encrypted and saved")
+	credFile.Write([]byte(fmt.Sprintf("%x%s%x", encrypted, delimiter, nonce)))
+	log.Println("File encrypted and saved.")
 
 }
 
@@ -254,7 +273,12 @@ func (s *Sicher) LoadEnv(prefix string, data interface{}) error {
 		fieldType := d.Type().Field(i)
 		isRequired := fieldType.Tag.Get("required")
 		key := fieldType.Tag.Get("envconfig")
-		tagName := prefix + key
+
+		tagName := key
+		if prefix != "" {
+			tagName = fmt.Sprintf("%s_%s", prefix, key)
+		}
+		tagName = strings.ToUpper(tagName)
 
 		envVar := os.Getenv(tagName)
 		if isRequired == "true" && envVar == "" {

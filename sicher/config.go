@@ -3,6 +3,7 @@ package sicher
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -18,7 +19,7 @@ func (s *Sicher) configure() {
 	// read the encryption key
 	key, err := os.ReadFile(fmt.Sprintf("%s.key", s.Environment))
 	if err != nil {
-		fmt.Printf("Encryption key (%s.key) is not available. Create one by running the cli with init flag.", s.Environment)
+		fmt.Printf("encryption key (%s.key) is not available. Create one by running the cli with init flag.\n", s.Environment)
 		return
 	}
 	strKey := string(key)
@@ -26,7 +27,7 @@ func (s *Sicher) configure() {
 	// read the encrypted credentials file
 	credFile, err := os.ReadFile(fmt.Sprintf("%s.enc", s.Environment))
 	if err != nil {
-		fmt.Printf("Encrypted credentials file (%s.enc) is not available. Create one by running the cli with init flag.", s.Environment)
+		fmt.Printf("encrypted credentials file (%s.enc) is not available. Create one by running the cli with init flag.\n", s.Environment)
 		return
 	}
 
@@ -42,7 +43,12 @@ func (s *Sicher) configure() {
 	}
 
 	if nonce != nil && fileText != nil {
-		plaintext := Decrypt(strKey, nonce, fileText)
+		plaintext, err := decrypt(strKey, nonce, fileText)
+		if err != nil {
+			fmt.Println("Error decrypting file:", err)
+			return
+		}
+
 		_, err = envBuf.Write(plaintext)
 		if err != nil {
 			fmt.Printf("Error decoding credentials: %s\n", err)
@@ -60,7 +66,7 @@ func (s *Sicher) setEnv() {
 	for k, v := range s.data {
 		err := os.Setenv(k, fmt.Sprintf("%v", v))
 		if err != nil {
-			panic(err)
+			log.Fatalf("Error setting environment variable key %s: %s\n", k, err)
 		}
 	}
 }

@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -23,7 +22,7 @@ func generateRandomPath() string {
 func cleanUpFile(filePath string) {
 	err := os.Remove(filePath)
 	if err != nil {
-		log.Printf("Error while cleaning up %v", err.Error())
+		fmt.Printf("Error while cleaning up %v \n", err.Error())
 	}
 }
 
@@ -39,12 +38,10 @@ func decodeFile(encFile string) (nonce []byte, fileText []byte, err error) {
 	}
 	nonce, err = hex.DecodeString(resp[1])
 	if err != nil {
-		log.Printf("Invalid credentials file: %s", err)
 		return nil, nil, err
 	}
 	fileText, err = hex.DecodeString(resp[0])
 	if err != nil {
-		log.Printf("Invalid credentials file: %s", err)
 		return nil, nil, err
 	}
 

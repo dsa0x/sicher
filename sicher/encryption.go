@@ -6,45 +6,41 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"io"
-	"log"
 )
 
-func Encrypt(key string, fileData []byte) (nonce []byte, ciphertext []byte) {
+func encrypt(key string, fileData []byte) (nonce []byte, ciphertext []byte, err error) {
 	hKey, _ := hex.DecodeString(key)
 	block, err := aes.NewCipher(hKey)
 	if err != nil {
-		panic(err.Error())
+		return
 	}
 
 	nonce = make([]byte, 12)
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		panic(err.Error())
+	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+		return
 	}
 
 	aesgcm, err := cipher.NewGCM(block)
 	if err != nil {
-		panic(err.Error())
+		return
 	}
 
 	ciphertext = aesgcm.Seal(nil, nonce, fileData, nil)
 	return
 }
 
-func Decrypt(key string, nonce []byte, text []byte) (plaintext []byte) {
+func decrypt(key string, nonce []byte, text []byte) (plaintext []byte, err error) {
 	hKey, _ := hex.DecodeString(key)
 	block, err := aes.NewCipher(hKey)
 	if err != nil {
-		log.Println("Error decrypting file:", err)
+		return
 	}
 
 	aesgcm, err := cipher.NewGCM(block)
 	if err != nil {
-		log.Println("Error decrypting file:", err)
+		return
 	}
 
 	plaintext, err = aesgcm.Open(nil, nonce, text, nil)
-	if err != nil {
-		log.Println("Error decrypting file:", err)
-	}
 	return
 }
