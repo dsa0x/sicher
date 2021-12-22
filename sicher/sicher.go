@@ -4,12 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"regexp"
 
 	"github.com/spf13/cobra"
@@ -98,7 +100,7 @@ func (s *Sicher) Initialize() {
 	}
 
 	// add the key file to gitignore
-	f, err := os.OpenFile(".gitignore", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	f, err := os.OpenFile(fmt.Sprintf("%s.gitignore", s.Path), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -115,7 +117,7 @@ func (s *Sicher) Initialize() {
 			return
 		}
 
-		if string(str) == fmt.Sprintf("%s%s.key", s.Path, s.Environment) {
+		if string(str) == fmt.Sprintf("%s.key", s.Environment) {
 			return
 		}
 
@@ -124,7 +126,7 @@ func (s *Sicher) Initialize() {
 		}
 	}
 
-	f.Write([]byte(fmt.Sprintf("\n%s%s.key", s.Path, s.Environment)))
+	f.Write([]byte(fmt.Sprintf("\n%s.key", s.Environment)))
 }
 
 // Edit opens the encrypted credentials file. Default editor is vim.
@@ -225,7 +227,56 @@ func (s *Sicher) Edit(editor ...string) {
 
 }
 
-func (s *Sicher) LoadEnv() {
+func (s *Sicher) loadEnv() {
 	s.configure()
 	s.setEnv()
+}
+
+func (s *Sicher) LoadEnv(prefix string, data interface{}) error {
+	s.loadEnv()
+
+	d := reflect.ValueOf(data)
+	if d.Kind() == reflect.Ptr {
+		d = d.Elem()
+	}
+
+	if !(d.Kind() == reflect.Struct || d.Kind() == reflect.Map) {
+		return errors.New("config must be a type of struct or map")
+	}
+
+	r := regexp.MustCompile(`(?:required:"(?P<required>\w+)")|(?:envconfig:"(?P<key>\w+)")`)
+
+	for i := 0; i < d.NumField(); i++ {
+		field := d.Field(i)
+		tag := d.Type().Field(i).Tag
+		str := r.FindAllStringSubmatch(string(tag), -1)
+
+		mp := make(map[string]string)
+		for _, v := range str {
+			getParams(r.SubexpNames(), v, mp)
+		}
+		tagName := prefix + mp["key"]
+
+		envVar := os.Getenv(tagName)
+		if mp["required"] == "true" && envVar == "" {
+			return errors.New("required env variable " + mp["key"] + " is not set")
+		}
+
+		switch field.Kind() {
+		case reflect.String:
+			field.SetString(envVar)
+		case reflect.Bool:
+			field.SetBool(envVar == "true")
+		}
+
+	}
+	return nil
+}
+
+func getParams(keys, values []string, mp map[string]string) {
+	for i := 1; i < len(keys); i++ {
+		if values[i] != "" {
+			mp[keys[i]] = values[i]
+		}
+	}
 }

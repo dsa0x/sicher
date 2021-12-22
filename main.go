@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	example.GetEnv()
+	example.Configure()
 }
