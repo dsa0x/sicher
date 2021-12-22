@@ -63,9 +63,10 @@ func parseConfig(config []byte, store map[string]string) (err error) {
 		cfgLine := strings.Split(line, "=")
 
 		// ignore commented lines
-		if len(cfgLine) < 2 || strings.HasPrefix(line, `#`) {
+		if len(cfgLine) < 2 || canIgnore(line) {
 			continue
 		}
+
 		store[cfgLine[0]] = strings.Join(cfgLine[1:], "=")
 		if err == io.EOF {
 			return nil
@@ -73,4 +74,10 @@ func parseConfig(config []byte, store map[string]string) (err error) {
 	}
 	return nil
 
+}
+
+// canIgnore ignores commented lines and empty lines
+func canIgnore(line string) bool {
+	line = strings.TrimSpace(line)
+	return strings.HasPrefix(line, `#`) || len(line) == 0
 }

@@ -12,30 +12,15 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
-	"strings"
-
-	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "sicher",
-	Short: "Sicher is a tool for managing your Go projects",
-}
-
 var delimiter = "==--=="
-
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
-	}
-}
 
 type Sicher struct {
 	// Path is the path to the project. Defaults to the current directory
 	Path string
 
-	// Environment is the environment to use. Defaults to "development"
+	// Environment is the environment to use. Defaults to "dev"
 	Environment string
 	data        map[string]string `yaml:"data"`
 }
@@ -59,7 +44,7 @@ func (s *Sicher) Initialize() {
 	}
 
 	if s.Environment == "" {
-		s.Environment = "development"
+		s.Environment = "dev"
 	}
 	// create the key file if it doesn't exist
 	keyFile, err := os.OpenFile(fmt.Sprintf("%s%s.key", s.Path, s.Environment), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
@@ -153,7 +138,7 @@ func (s *Sicher) Edit(editor ...string) {
 	}
 
 	if s.Environment == "" {
-		s.Environment = "development"
+		s.Environment = "dev"
 	}
 
 	match, _ := regexp.MatchString("^(nano|vim|vi|)$", editorName)
@@ -244,7 +229,7 @@ func (s *Sicher) Edit(editor ...string) {
 		fmt.Printf("Error encrypting file: %s \n", err)
 		return
 	}
-	// str := hex.EncodeToString(encrypted)
+
 	credFile.Truncate(0)
 	credFile.Write([]byte(fmt.Sprintf("%x%s%x", encrypted, delimiter, nonce)))
 	log.Println("File encrypted and saved.")
@@ -256,18 +241,32 @@ func (s *Sicher) loadEnv() {
 	s.setEnv()
 }
 
-func (s *Sicher) LoadEnv(prefix string, data interface{}) error {
+// LoadEnv loads the environment variables from the encrypted credentials file into the config gile.
+// configFile can be a struct or map[string]string
+func (s *Sicher) LoadEnv(prefix string, configFile interface{}) error {
 	s.loadEnv()
 
-	d := reflect.ValueOf(data)
+	d := reflect.ValueOf(configFile)
 	if d.Kind() == reflect.Ptr {
 		d = d.Elem()
+	} else {
+		return errors.New("configFile must be a pointer to a struct or map")
 	}
 
 	if !(d.Kind() == reflect.Struct || d.Kind() == reflect.Map) {
 		return errors.New("config must be a type of struct or map")
 	}
 
+	// the configFile is a map, set the values
+	if d.Kind() == reflect.Map {
+		if d.Type() != reflect.TypeOf(map[string]string{}) {
+			return errors.New("configFile must be a struct or map[string]string")
+		}
+		d.Set(reflect.ValueOf(s.data))
+		return nil
+	}
+
+	// if the interface is a struct, iterate over the fields and set the values
 	for i := 0; i < d.NumField(); i++ {
 		field := d.Field(i)
 		fieldType := d.Type().Field(i)
@@ -278,7 +277,6 @@ func (s *Sicher) LoadEnv(prefix string, data interface{}) error {
 		if prefix != "" {
 			tagName = fmt.Sprintf("%s_%s", prefix, key)
 		}
-		tagName = strings.ToUpper(tagName)
 
 		envVar := os.Getenv(tagName)
 		if isRequired == "true" && envVar == "" {

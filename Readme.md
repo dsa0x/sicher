@@ -34,7 +34,7 @@ To initialize a new sicher project,
 sicher init --env environmentname
 ```
 
-This will create a key file `environment.key` and an encrypted credentials file `environment.enc` in the current directory. The environment name is optional and defaults to `development`.
+This will create a key file `{environment}.key` and an encrypted credentials file `{environment}.enc` in the current directory. The environment name is optional and defaults to `dev`.
 
 To edit the credentials,
 

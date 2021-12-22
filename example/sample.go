@@ -15,13 +15,14 @@ type Config struct {
 
 func Configure() {
 
-	var config Config
+	var cfg Config
+	// cfg := make(map[string]string)
 
-	s := sicher.New("development")
-	err := s.LoadEnv("REG", &config)
+	s := sicher.New("dev")
+	err := s.LoadEnv("REG", &cfg)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(config)
+	fmt.Println(cfg)
 }
