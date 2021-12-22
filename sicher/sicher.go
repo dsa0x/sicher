@@ -100,7 +100,7 @@ func (s *Sicher) Initialize() {
 
 	// if the encrypted file is new, write some random data to it
 	if encFileStats.Size() < 1 {
-		initFile := []byte(`base_key: test key`)
+		initFile := []byte(`TESTKEY=loremipsum`)
 		nonce, ciphertext, err := encrypt(key, initFile)
 		if err != nil {
 			fmt.Printf("Error encrypting file: %s\n", err)
