@@ -17,6 +17,7 @@ func setupTest(path string) (*Sicher, string, string) {
 	s := &Sicher{
 		Path:        path,
 		Environment: "testenv",
+		data:        make(map[string]string),
 	}
 
 	return s, fmt.Sprintf("%s/%s.enc", path, s.Environment), fmt.Sprintf("%s/%s.key", path, s.Environment)
