@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/dsa0x/sicher"
@@ -16,14 +17,17 @@ var (
 	styleFlag  string
 )
 
-func init() {
-	errHelp := `
+var writer io.Writer = os.Stderr
+
+var errHelp = `
 # Initialize sicher in your project
 sicher init
 
 # Edit environment variables
 sicher edit
-	`
+`
+
+func init() {
 	flag.StringVar(&pathFlag, "path", ".", "Path to the project")
 	flag.StringVar(&envFlag, "env", "dev", "Environment to use")
 	flag.StringVar(&styleFlag, "style", string(sicher.DefaultEnvStyle), "Env file style. Valid values are basic and yaml")
@@ -31,7 +35,7 @@ sicher edit
 
 	flag.ErrHelp = errors.New(errHelp)
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, errHelp)
+		fmt.Fprint(writer, errHelp)
 	}
 }
 
@@ -50,5 +54,7 @@ func Execute() {
 		s.Initialize(os.Stdin)
 	case "edit":
 		s.Edit(editorFlag)
+	default:
+		flag.Usage()
 	}
 }
