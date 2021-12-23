@@ -55,7 +55,11 @@ func Execute() {
 	case "init":
 		s.Initialize(os.Stdin)
 	case "edit":
-		s.Edit(editorFlag)
+		err := s.Edit(editorFlag)
+		if err != nil {
+			fmt.Fprintln(writer, err)
+			os.Exit(1)
+		}
 	default:
 		flag.Usage()
 	}

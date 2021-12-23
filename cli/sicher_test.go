@@ -7,7 +7,8 @@ import (
 )
 
 func TestInvalidCmd(t *testing.T) {
-
+	oldWriter := writer
+	defer func() { writer = oldWriter }()
 	b := bytes.Buffer{}
 
 	writer = &b
@@ -19,6 +20,8 @@ func TestInvalidCmd(t *testing.T) {
 }
 
 func TestInitCmd(t *testing.T) {
+	oldWriter := writer
+	defer func() { writer = oldWriter }()
 	b := bytes.Buffer{}
 
 	writer = &b

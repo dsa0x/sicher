@@ -46,19 +46,82 @@ func TestEnvStyle(t *testing.T) {
 		t.Errorf("Expected environment style to be set to %s, got %s", "basic", s.envStyle)
 	}
 
+}
+
+func TestInvalidEnvStyle(t *testing.T) {
+	s := New("testenv", "")
 	if os.Getenv("SICHER_ENV_STYLE") == "1" {
 		s.SetEnvStyle("wrong")
 		return
 	}
 
-	cmd := exec.Command(os.Args[0], "-test.run=TestEnvStyle")
+	cmd := exec.Command(os.Args[0], "-test.run=TestInvalidEnvStyle")
 	cmd.Env = append(os.Environ(), "SICHER_ENV_STYLE=1")
 	err := cmd.Run()
 	if e, ok := err.(*exec.ExitError); ok && !e.Success() {
 		return
 	}
 	t.Fatalf("process ran with err %v, expected exit status 1", err)
+}
 
+func TestEditSuccess(t *testing.T) {
+	oldExecCmd := execCmd
+	defer func() { execCmd = oldExecCmd }()
+	s, encPath, keyPath := setupTest()
+
+	s.Initialize(os.Stdin)
+	buf := bytes.Buffer{}
+
+	execCmd = func(cmd string, args ...string) *exec.Cmd {
+		stdIn, stdOut, stdErr = &buf, &buf, &buf
+
+		if cmd != "vim" {
+			t.Errorf("Expected command to be vim, got %s", cmd)
+		}
+		return exec.Command("cat", args...)
+	}
+
+	err := s.Edit("vim")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if !bytes.Contains(buf.Bytes(), []byte("TESTKEY=loremipsum")) {
+		t.Errorf("Expected credential file to be opened and contain TESTKEY=loremipsum; got %s", buf.String())
+	}
+	if !bytes.Contains(buf.Bytes(), []byte("File encrypted and saved")) {
+		t.Errorf("Expected file to be saved and message to be displayed, got %s", buf.String())
+	}
+
+	// get path to the gitignore file and cleanup
+	gitPath := strings.Replace(encPath, fmt.Sprintf("%s.enc", s.Environment), ".gitignore", 1)
+
+	t.Cleanup(func() {
+		os.Remove(encPath)
+		os.Remove(keyPath)
+		os.Remove(gitPath)
+	})
+}
+func TestEditFail(t *testing.T) {
+	oldExecCmd := execCmd
+	defer func() { execCmd = oldExecCmd }()
+	s, _, _ := setupTest()
+
+	buf := bytes.Buffer{}
+
+	execCmd = func(cmd string, args ...string) *exec.Cmd {
+		stdIn, stdOut, stdErr = &buf, &buf, &buf
+
+		if cmd != "vim" {
+			t.Errorf("Expected command to be vim, got %s", cmd)
+		}
+		return exec.Command("cat", args...)
+	}
+
+	err := s.Edit("vim")
+	if err == nil {
+		t.Errorf("Expected error to be returned, got %s", err)
+	}
 }
 
 func TestSicherInitialize(t *testing.T) {
@@ -138,7 +201,10 @@ func TestSicherInitializeExistingCredNoOverwrite(t *testing.T) {
 	buf := bytes.Buffer{}
 	buf.WriteString("n")
 
-	s.Initialize(&buf)
+	err = s.Initialize(&buf)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
 
 	f, err = os.Open(encPath)
 	if err != nil {
@@ -210,3 +276,5 @@ func TestSetEnv(t *testing.T) {
 	}
 
 }
+
+// func fakeExecCommand
