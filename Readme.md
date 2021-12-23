@@ -2,7 +2,7 @@
 
 Sicher is a Go implementation of the secret management system that was introduced in Ruby on Rails 6.
 
-Sicher is a go module that allows safe storage of encrypted credentials in a version control system. The credentials can only be decrypted by a key file which is not added to the source control. The file is edited in a temp file on a local system and destroyed after each edit.
+Sicher is a go package that allows the safe storage of encrypted credentials in a version control system. The credentials can only be decrypted by a key file, and this key file is not added to the source control. The file is edited in a temp file on a local system and destroyed after each edit.
 
 Using sicher in a project creates a set of files
 
