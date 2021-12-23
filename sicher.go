@@ -21,6 +21,7 @@ import (
 var delimiter = "==--=="
 var defaultEnv = "dev"
 var DefaultEnvStyle = DOTENV
+var masterKey = "SICHER_MASTER_KEY"
 var (
 	execCmd               = exec.Command
 	stdIn   io.ReadWriter = os.Stdin
@@ -153,16 +154,22 @@ func (s *sicher) Edit(editor ...string) error {
 		return fmt.Errorf("invalid Command: Select one of vim, vi, code or nano as editor, or leave as empty")
 	}
 
+	var cmdArgs []string
 	// waitOpt is needed to enable vscode to wait for the editor to close before continuing
 	var waitOpt string
 	if editorName == "code" {
 		waitOpt = "--wait"
+		cmdArgs = append(cmdArgs, waitOpt)
 	}
 
-	// read the encryption key
+	// read the encryption key. if key not in file, try getting from env
 	key, err := os.ReadFile(fmt.Sprintf("%s%s.key", s.Path, s.Environment))
 	if err != nil {
-		return fmt.Errorf("encryption key(%s.key) is not available. Create one by running the cli with init flag", s.Environment)
+		if os.Getenv(masterKey) != "" {
+			key = []byte(os.Getenv(masterKey))
+		} else {
+			return fmt.Errorf("encryption key(%s.key) is not available. Create one by running the cli with init flag", s.Environment)
+		}
 	}
 	strKey := string(key)
 
@@ -208,7 +215,8 @@ func (s *sicher) Edit(editor ...string) error {
 	}
 
 	//open decrypted file with editor
-	cmd := execCmd(editorName, waitOpt, filePath)
+	cmdArgs = append(cmdArgs, filePath)
+	cmd := execCmd(editorName, cmdArgs...)
 	cmd.Stdin = stdIn
 	cmd.Stdout = stdOut
 	cmd.Stderr = stdErr

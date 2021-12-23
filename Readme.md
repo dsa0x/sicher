@@ -94,7 +94,7 @@ func main() {
 }
 ```
 
-The `LoadEnv` function will load the credentials from the encrypted file `{environment.enc}`, decrypt it with the key file `{environment.key}`, and then unmarshal the result into the given config object. The example above uses a `struct`, but the object can be of type `struct` or `map[string]string`.
+The `LoadEnv` function will load the credentials from the encrypted file `{environment.enc}`, decrypt it with the key file `{environment.key}` or the environment variable `SICHER_MASTER_KEY`, and then unmarshal the result into the given config object. The example above uses a `struct`, but the object can be of type `struct` or `map[string]string`.
 
 **_LoadEnv Parameters:_**
 
@@ -102,6 +102,14 @@ The `LoadEnv` function will load the credentials from the encrypted file `{envir
 | ------ | --------------------------------------- | ------------- |
 | prefix | the prefix of the environment variables | string        |
 | config | the config object                       | struct or map |
+
+The key also be loaded from the environment variable `SICHER_MASTER_KEY`. In production, storing the key in the environment variable is recommended.
+
+To use the key from environment variable:
+
+```shell
+env SICHER_MASTER_KEY=`{YOUR_KEY_HERE}` sicher edit
+```
 
 All env files should be in the format like the example below:
 
@@ -143,3 +151,7 @@ If object is a map, the keys are the environment variables and the values are th
 - Enable support for nested yaml env files
 - Add support for other types of encryption
 - test for Edit
+
+### License
+
+MIT License

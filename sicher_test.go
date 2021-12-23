@@ -88,9 +88,11 @@ func TestEditSuccess(t *testing.T) {
 
 	if !bytes.Contains(buf.Bytes(), []byte("TESTKEY=loremipsum")) {
 		t.Errorf("Expected credential file to be opened and contain TESTKEY=loremipsum; got %s", buf.String())
+		return
 	}
 	if !bytes.Contains(buf.Bytes(), []byte("File encrypted and saved")) {
 		t.Errorf("Expected file to be saved and message to be displayed, got %s", buf.String())
+		return
 	}
 
 	// get path to the gitignore file and cleanup
@@ -102,6 +104,7 @@ func TestEditSuccess(t *testing.T) {
 		os.Remove(gitPath)
 	})
 }
+
 func TestEditFail(t *testing.T) {
 	oldExecCmd := execCmd
 	defer func() { execCmd = oldExecCmd }()
