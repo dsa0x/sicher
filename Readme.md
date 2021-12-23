@@ -38,7 +38,7 @@ sicher init
 
 **_Optional flags:_**
 
-| flag   | description                                     | default |
+| flag   | description                                     | default | options       |
 | ------ | ----------------------------------------------- | ------- | ------------- |
 | -env   | set the environment name                        | dev     |               |
 | -path  | set the path to the credentials file            | .       |               |
