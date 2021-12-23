@@ -9,7 +9,7 @@ import (
 )
 
 func setupTest() (*Sicher, string, string) {
-	s := New("testenv", "../example")
+	s := New("testenv", "./example")
 	return s, fmt.Sprintf("%s%s.enc", s.Path, s.Environment), fmt.Sprintf("%s%s.key", s.Path, s.Environment)
 
 }

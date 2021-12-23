@@ -1,6 +1,3 @@
 .vscode
 .DS_Store
 *.key
-dev.key
-test.key
-prod.key

@@ -14,13 +14,15 @@ Using sicher in a project creates a set of files
 
 ## Installation
 
-To use as a library,
+To use sicher in your project, you need to install the go module as a library and also install the CLI.
+
+Installing the library,
 
 ```shell
 go get github.com/dsaOx/sicher
 ```
 
-To use in the command line, install the binary:
+Installing the command line interface,:
 
 ```shell
 go install github.com/dsaOx/sicher/cmd/sicher
@@ -86,7 +88,8 @@ APP_URL=http://localhost:8080
 
 ### Todo
 
-
 - Make addition to the `.gitignore` file optional
-- When a user wants to initialize sicher, add a warning if anencrypted file already exists, but there is no no key file
+- When a user wants to initialize sicher, add a warning if an encrypted file already exists, but there is no key file
+- Add a `-force` flag to `sicher init` to overwrite the encrypted file if it already exists
+- Enable support for yaml style env files
 - Add support for other types of encryption

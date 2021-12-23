@@ -3,7 +3,7 @@ package example
 import (
 	"fmt"
 
-	"github.com/dsa0x/sicher/sicher"
+	"github.com/dsa0x/sicher"
 )
 
 type Config struct {
@@ -13,10 +13,25 @@ type Config struct {
 	JWTSecret   string `required:"false" envconfig:"JWT_SECRET"`
 }
 
-func Configure() {
+// LoadConfigStruct Loads config into a struct
+func LoadConfigStruct() {
 
 	var cfg Config
 	// cfg := make(map[string]string)
+
+	s := sicher.New("dev")
+	err := s.LoadEnv("", &cfg)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(cfg)
+}
+
+// LoadConfigMap Loads config into a map
+func LoadConfigMap() {
+
+	cfg := make(map[string]string)
 
 	s := sicher.New("dev")
 	err := s.LoadEnv("", &cfg)

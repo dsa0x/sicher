@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dsa0x/sicher/sicher"
+	"github.com/dsa0x/sicher"
 )
 
 var (
