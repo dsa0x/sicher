@@ -13,6 +13,7 @@ var (
 	pathFlag   string
 	envFlag    string
 	editorFlag string
+	styleFlag  string
 )
 
 func init() {
@@ -25,6 +26,7 @@ sicher edit
 	`
 	flag.StringVar(&pathFlag, "path", ".", "Path to the project")
 	flag.StringVar(&envFlag, "env", "dev", "Environment to use")
+	flag.StringVar(&styleFlag, "style", string(sicher.DefaultEnvStyle), "Env file style. Valid values are basic and yaml")
 	flag.StringVar(&editorFlag, "editor", "vim", "Select editor. vim | vi | nano")
 
 	flag.ErrHelp = errors.New(errHelp)
@@ -42,6 +44,7 @@ func Execute() {
 	command := os.Args[1]
 	flag.CommandLine.Parse(os.Args[2:])
 	s := sicher.New(envFlag, pathFlag)
+	s.SetEnvStyle(styleFlag)
 	switch command {
 	case "init":
 		s.Initialize(os.Stdin)

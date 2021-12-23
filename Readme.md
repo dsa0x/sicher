@@ -38,10 +38,11 @@ sicher init
 
 **_Optional flags:_**
 
-| flag  | description                          | default |
-| ----- | ------------------------------------ | ------- |
-| -env  | set the environment name             | dev     |
-| -path | set the path to the credentials file | .       |
+| flag   | description                                     | default |
+| ------ | ----------------------------------------------- | ------- | ------------- |
+| -env   | set the environment name                        | dev     |               |
+| -path  | set the path to the credentials file            | .       |               |
+| -style | set the style of the decrypted credentials file | basic   | basic or yaml |
 
 This will create a key file `{environment}.key` and an encrypted credentials file `{environment}.enc` in the current directory. The environment name is optional and defaults to `dev`, but can be set to anything else with the `-env` flag.
 
@@ -53,11 +54,12 @@ sicher edit
 
 **_Optional flags:_**
 
-| flag    | description                          | default |
-| ------- | ------------------------------------ | ------- |
-| -env    | set the environment name             | dev     |
-| -path   | set the path to the credentials file | .       |
-| -editor | set the editor to use                | vim     |
+| flag    | description                                     | default | options       |
+| ------- | ----------------------------------------------- | ------- | ------------- |
+| -env    | set the environment name                        | dev     |               |
+| -path   | set the path to the credentials file            | .       |               |
+| -editor | set the editor to use                           | vim     | vim, nano, vi |
+| -style  | set the style of the decrypted credentials file | basic   | basic or yaml |
 
 This will create a temporary file, decrypt the credentials into it, and open it in your editor. The editor defaults to `vim`, but can be also set to `nano` or `vi` with the `-editor` flag. The temporary file is destroyed after each save, and the encrypted credentials file is updated with the new content.
 
@@ -81,8 +83,8 @@ type Config struct {
 func main() {
 	var config Config
 
-	s := sicher.New("dev")
-	err := s.LoadEnv("", &cfg, "yaml")
+	s := sicher.New("dev", ".")
+	err := s.LoadEnv("", &cfg)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -90,17 +92,16 @@ func main() {
 }
 ```
 
-The `LoadEnv` takes 3 parameters, `prefix`, `configObject` and `envType`. The function will load the credentials from the encrypted file `{environment.enc}`, decrypt it with the key file `{environment.key}`, and then unmarshal the result into the given config object. The example above uses a `struct`, but the object can be of type `struct` or `map[string]string`.
+The `LoadEnv` function will load the credentials from the encrypted file `{environment.enc}`, decrypt it with the key file `{environment.key}`, and then unmarshal the result into the given config object. The example above uses a `struct`, but the object can be of type `struct` or `map[string]string`.
 
 If the object is a struct, the `env` tag must be attached to each variable. The `required` tag is optional, but if set to `true`, it will be used to check if the field is set. If the field is not set, an error will be returned.
 
 **_LoadEnv Parameters:_**
 
-| name    | description                             | type              |
-| ------- | --------------------------------------- | ----------------- |
-| prefix  | the prefix of the environment variables | string            |
-| config  | the config object                       | struct or map     |
-| envType | the type of env file                    | "basic" or "yaml" |
+| name   | description                             | type          |
+| ------ | --------------------------------------- | ------------- |
+| prefix | the prefix of the environment variables | string        |
+| config | the config object                       | struct or map |
 
 All env files should be in the format like the example below:
 
@@ -125,7 +126,6 @@ APP_URL:http://localhost:8080
 ### Todo
 
 - Make addition to the `.gitignore` file optional
-- When a user wants to initialize sicher, add a warning if an encrypted file already exists, but there is no key file
 - Add a `-force` flag to `sicher init` to overwrite the encrypted file if it already exists
 - Enable support for nested yaml env files
 - Add support for other types of encryption

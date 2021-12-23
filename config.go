@@ -7,7 +7,7 @@ import (
 )
 
 // configure reads the credentials file and sets the environment variables
-func (s *sicher) configure(envType EnvType) {
+func (s *sicher) configure() {
 
 	if s.Environment == "" {
 		fmt.Println("Environment not set")
@@ -48,7 +48,7 @@ func (s *sicher) configure(envType EnvType) {
 		return
 	}
 
-	err = parseConfig(plaintext, s.data, envType)
+	err = parseConfig(plaintext, s.data, s.envStyle)
 	if err != nil {
 		fmt.Printf("Error parsing env file: %s\n", err)
 		return

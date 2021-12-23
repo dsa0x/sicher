@@ -18,8 +18,8 @@ func LoadConfigStruct() {
 
 	var cfg Config
 
-	s := sicher.New("dev")
-	err := s.LoadEnv("", &cfg, "basic")
+	s := sicher.New("dev", ".")
+	err := s.LoadEnv("", &cfg)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -32,8 +32,8 @@ func LoadConfigMap() {
 
 	cfg := make(map[string]string)
 
-	s := sicher.New("dev")
-	err := s.LoadEnv("", &cfg, "yaml")
+	s := sicher.New("dev", ".")
+	err := s.LoadEnv("", &cfg)
 	if err != nil {
 		fmt.Println(err)
 		return

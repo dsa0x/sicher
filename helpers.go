@@ -14,18 +14,24 @@ import (
 	"time"
 )
 
-type EnvType string
+type EnvStyle string
 
 const (
-	YAML  EnvType = "yaml"
-	YML   EnvType = "yml"
-	BASIC EnvType = "basic"
+	YAML  EnvStyle = "yaml"
+	YML   EnvStyle = "yml"
+	BASIC EnvStyle = "basic"
 )
 
-var EnvTypeDelim = map[EnvType]string{
+var envStyleDelim = map[EnvStyle]string{
 	YAML:  ":",
 	YML:   ":",
 	BASIC: "=",
+}
+
+var envStyleExt = map[EnvStyle]string{
+	YAML:  "yml",
+	YML:   "yml",
+	BASIC: "env",
 }
 
 // cleanUpFile removes the given file
@@ -67,13 +73,13 @@ func generateKey() string {
 }
 
 // parseConfig parses the environment variables into a map
-func parseConfig(config []byte, store map[string]string, envType EnvType) (err error) {
+func parseConfig(config []byte, store map[string]string, envType EnvStyle) (err error) {
 
 	if envType != BASIC && envType != YAML && envType != YML {
 		return errors.New("invalid environment type")
 	}
 
-	delim := EnvTypeDelim[envType]
+	delim := envStyleDelim[envType]
 
 	var b bytes.Buffer
 	b.Write(config)

@@ -21,31 +21,33 @@ import (
 
 var delimiter = "==--=="
 var defaultEnv = "dev"
+var DefaultEnvStyle = BASIC
 
 type sicher struct {
-	// Path is the path to the project. Defaults to the current directory
+	// Path is the path to the project. If empty string, it defaults to the current directory
 	Path string
 
 	// Environment is the environment to use. Defaults to "dev"
 	Environment string
 	data        map[string]string `yaml:"data"`
+
+	envStyle EnvStyle
 }
 
 // New creates a new sicher struct
-func New(environment string, path ...string) *sicher {
+// path is the path to the project. If empty string, it defaults to the current directory
+// environment is the environment to use. Defaults to "dev"
+func New(environment string, path string) *sicher {
 
 	if environment == "" {
 		environment = defaultEnv
 	}
 
-	var _path string
-	if len(path) < 1 || path[0] == "" {
-		_path = "."
-	} else {
-		_path = path[0]
+	if path == "" {
+		path = "."
 	}
-	_path, _ = filepath.Abs(_path)
-	return &sicher{Path: _path + "/", Environment: environment, data: make(map[string]string)}
+	path, _ = filepath.Abs(path)
+	return &sicher{Path: path + "/", Environment: environment, data: make(map[string]string), envStyle: BASIC}
 }
 
 // Initialize initializes the sicher project and creates the necessary files
@@ -191,7 +193,7 @@ func (s *sicher) Edit(editor ...string) {
 	enc := buf.String()
 
 	// Create a temporary file to edit the decrypted credentials
-	f, err := os.CreateTemp("", "*-credentials.env")
+	f, err := os.CreateTemp("", fmt.Sprintf("*-credentials.%s", envStyleExt[s.envStyle]))
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -259,9 +261,8 @@ func (s *sicher) Edit(editor ...string) {
 
 // LoadEnv loads the environment variables from the encrypted credentials file into the config gile.
 // configFile can be a struct or map[string]string
-// envType can be "basic" or "yaml"
-func (s *sicher) LoadEnv(prefix string, configFile interface{}, envType EnvType) error {
-	s.configure(envType)
+func (s *sicher) LoadEnv(prefix string, configFile interface{}) error {
+	s.configure()
 	s.setEnv()
 
 	d := reflect.ValueOf(configFile)
@@ -310,4 +311,12 @@ func (s *sicher) LoadEnv(prefix string, configFile interface{}, envType EnvType)
 
 	}
 	return nil
+}
+
+func (s *sicher) SetEnvStyle(style string) {
+	if style != "basic" && style != "yaml" && style != "yml" {
+		fmt.Println("Invalid style: Select one of basic, yml, or yaml")
+		os.Exit(1)
+	}
+	s.envStyle = EnvStyle(style)
 }

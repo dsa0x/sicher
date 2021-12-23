@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -18,7 +19,7 @@ func setupTest() (*sicher, string, string) {
 func TestNewWithNoEnvironment(t *testing.T) {
 	path, _ := filepath.Abs(".")
 	path += "/"
-	s := New("")
+	s := New("", "")
 	if s.Path != path {
 		t.Errorf("Expected path to be %s, got %s", path, s.Path)
 	}
@@ -30,11 +31,33 @@ func TestNewWithNoEnvironment(t *testing.T) {
 }
 func TestNewWithEnvironment(t *testing.T) {
 	env := "testenv"
-	s := New("testenv")
+	s := New("testenv", "")
 
 	if s.Environment != env {
 		t.Errorf("Expected environment to be set to %s if none is given, got %s", env, s.Environment)
 	}
+
+}
+func TestEnvStyle(t *testing.T) {
+	s := New("testenv", "")
+	s.SetEnvStyle("basic")
+
+	if s.envStyle != "basic" {
+		t.Errorf("Expected environment style to be set to %s, got %s", "basic", s.envStyle)
+	}
+
+	if os.Getenv("SICHER_ENV_STYLE") == "1" {
+		s.SetEnvStyle("wrong")
+		return
+	}
+
+	cmd := exec.Command(os.Args[0], "-test.run=TestEnvStyle")
+	cmd.Env = append(os.Environ(), "SICHER_ENV_STYLE=1")
+	err := cmd.Run()
+	if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+		return
+	}
+	t.Fatalf("process ran with err %v, expected exit status 1", err)
 
 }
 
@@ -155,7 +178,7 @@ func TestLoadEnv(t *testing.T) {
 	}
 
 	mp := make(map[string]string)
-	err = s.LoadEnv("", &mp, "basic")
+	err = s.LoadEnv("", &mp)
 	if err != nil {
 		t.Errorf("Expected to load envirnoment variables; got error %v", err)
 	}
