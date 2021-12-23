@@ -148,9 +148,15 @@ func (s *sicher) Edit(editor ...string) error {
 		editorName = "vim"
 	}
 
-	match, _ := regexp.MatchString("^(nano|vim|vi|)$", editorName)
+	match, _ := regexp.MatchString("^(nano|vim|vi|code|)$", editorName)
 	if !match {
-		return fmt.Errorf("invalid Command: Select one of vim, vi, or nano as editor, or leave as empty")
+		return fmt.Errorf("invalid Command: Select one of vim, vi, code or nano as editor, or leave as empty")
+	}
+
+	// waitOpt is needed to enable vscode to wait for the editor to close before continuing
+	var waitOpt string
+	if editorName == "code" {
+		waitOpt = "--wait"
 	}
 
 	// read the encryption key
@@ -202,7 +208,7 @@ func (s *sicher) Edit(editor ...string) error {
 	}
 
 	//open decrypted file with editor
-	cmd := execCmd(editorName, filePath)
+	cmd := execCmd(editorName, waitOpt, filePath)
 	cmd.Stdin = stdIn
 	cmd.Stdout = stdOut
 	cmd.Stderr = stdErr
