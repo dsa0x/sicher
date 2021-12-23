@@ -22,7 +22,7 @@ import (
 var delimiter = "==--=="
 var defaultEnv = "dev"
 
-type Sicher struct {
+type sicher struct {
 	// Path is the path to the project. Defaults to the current directory
 	Path string
 
@@ -32,7 +32,7 @@ type Sicher struct {
 }
 
 // New creates a new sicher struct
-func New(environment string, path ...string) *Sicher {
+func New(environment string, path ...string) *sicher {
 
 	if environment == "" {
 		environment = defaultEnv
@@ -45,11 +45,11 @@ func New(environment string, path ...string) *Sicher {
 		_path = path[0]
 	}
 	_path, _ = filepath.Abs(_path)
-	return &Sicher{Path: _path + "/", Environment: environment, data: make(map[string]string)}
+	return &sicher{Path: _path + "/", Environment: environment, data: make(map[string]string)}
 }
 
 // Initialize initializes the sicher project and creates the necessary files
-func (s *Sicher) Initialize() {
+func (s *sicher) Initialize() {
 	key := generateKey()
 
 	// create the key file if it doesn't exist
@@ -135,7 +135,7 @@ func (s *Sicher) Initialize() {
 }
 
 // Edit opens the encrypted credentials in a temporary file for editing. Default editor is vim.
-func (s *Sicher) Edit(editor ...string) {
+func (s *sicher) Edit(editor ...string) {
 	var editorName string
 	if len(editor) > 0 {
 		editorName = editor[0]
@@ -238,14 +238,14 @@ func (s *Sicher) Edit(editor ...string) {
 
 }
 
-func (s *Sicher) loadEnv() {
+func (s *sicher) loadEnv() {
 	s.configure()
 	s.setEnv()
 }
 
 // LoadEnv loads the environment variables from the encrypted credentials file into the config gile.
 // configFile can be a struct or map[string]string
-func (s *Sicher) LoadEnv(prefix string, configFile interface{}) error {
+func (s *sicher) LoadEnv(prefix string, configFile interface{}) error {
 	s.loadEnv()
 
 	d := reflect.ValueOf(configFile)

@@ -7,7 +7,7 @@ import (
 )
 
 // configure reads the credentials file and sets the environment variables
-func (s *Sicher) configure() {
+func (s *sicher) configure() {
 
 	if s.Environment == "" {
 		fmt.Println("Environment not set")
@@ -57,7 +57,7 @@ func (s *Sicher) configure() {
 
 }
 
-func (s *Sicher) setEnv() {
+func (s *sicher) setEnv() {
 	for k, v := range s.data {
 		err := os.Setenv(k, fmt.Sprintf("%v", v))
 		if err != nil {

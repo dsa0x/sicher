@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func setupTest() (*Sicher, string, string) {
+func setupTest() (*sicher, string, string) {
 	s := New("testenv", "./example")
 	return s, fmt.Sprintf("%s%s.enc", s.Path, s.Environment), fmt.Sprintf("%s%s.key", s.Path, s.Environment)
 
