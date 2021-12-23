@@ -33,6 +33,7 @@ func LoadConfigMap() {
 	cfg := make(map[string]string)
 
 	s := sicher.New("dev", ".")
+	s.SetEnvStyle("yaml") // default is basic
 	err := s.LoadEnv("", &cfg)
 	if err != nil {
 		fmt.Println(err)

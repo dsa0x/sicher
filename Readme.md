@@ -85,6 +85,7 @@ func main() {
 	var config Config
 
 	s := sicher.New("dev", ".")
+	s.SetEnvStyle("yaml") // default is basic
 	err := s.LoadEnv("", &cfg)
 	if err != nil {
 		fmt.Println(err)
@@ -94,8 +95,6 @@ func main() {
 ```
 
 The `LoadEnv` function will load the credentials from the encrypted file `{environment.enc}`, decrypt it with the key file `{environment.key}`, and then unmarshal the result into the given config object. The example above uses a `struct`, but the object can be of type `struct` or `map[string]string`.
-
-If the object is a struct, the `env` tag must be attached to each variable. The `required` tag is optional, but if set to `true`, it will be used to check if the field is set. If the field is not set, an error will be returned.
 
 **_LoadEnv Parameters:_**
 
@@ -124,7 +123,21 @@ MONGO_DB_NAME:sicher
 APP_URL:http://localhost:8080
 ```
 
-### Todo
+If the object is a struct, the `env` tag must be attached to each variable. The `required` tag is optional, but if set to `true`, it will be used to check if the field is set. If the field is not set, an error will be returned.
+An example of how the struct will look like:
+
+```go
+type Config struct {
+	Port        string `required:"true" env:"PORT"`
+	MongoDbURI  string `required:"true" env:"MONGO_DB_URI"`
+	MongoDbName string `required:"true" env:"MONGO_DB_NAME"`
+	AppUrl   string `required:"false" env:"APP_URL"`
+}
+```
+
+If object is a map, the keys are the environment variables and the values are the values.
+
+### Todo or not todo
 
 - Add a `-force` flag to `sicher init` to overwrite the encrypted file if it already exists
 - Enable support for nested yaml env files
