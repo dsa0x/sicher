@@ -17,21 +17,21 @@ import (
 type EnvStyle string
 
 const (
-	YAML  EnvStyle = "yaml"
-	YML   EnvStyle = "yml"
-	BASIC EnvStyle = "basic"
+	YAML   EnvStyle = "yaml"
+	YML    EnvStyle = "yml"
+	DOTENV EnvStyle = "dotenv"
 )
 
 var envStyleDelim = map[EnvStyle]string{
-	YAML:  ":",
-	YML:   ":",
-	BASIC: "=",
+	YAML:   ":",
+	YML:    ":",
+	DOTENV: "=",
 }
 
 var envStyleExt = map[EnvStyle]string{
-	YAML:  "yml",
-	YML:   "yml",
-	BASIC: "env",
+	YAML:   "yml",
+	YML:    "yml",
+	DOTENV: "env",
 }
 
 // cleanUpFile removes the given file
@@ -75,7 +75,7 @@ func generateKey() string {
 // parseConfig parses the environment variables into a map
 func parseConfig(config []byte, store map[string]string, envType EnvStyle) (err error) {
 
-	if envType != BASIC && envType != YAML && envType != YML {
+	if envType != DOTENV && envType != YAML && envType != YML {
 		return errors.New("invalid environment type")
 	}
 

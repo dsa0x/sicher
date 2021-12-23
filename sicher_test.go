@@ -40,10 +40,10 @@ func TestNewWithEnvironment(t *testing.T) {
 }
 func TestEnvStyle(t *testing.T) {
 	s := New("testenv", "")
-	s.SetEnvStyle("basic")
+	s.SetEnvStyle("dotenv")
 
-	if s.envStyle != "basic" {
-		t.Errorf("Expected environment style to be set to %s, got %s", "basic", s.envStyle)
+	if s.envStyle != "dotenv" {
+		t.Errorf("Expected environment style to be set to %s, got %s", "dotenv", s.envStyle)
 	}
 
 }

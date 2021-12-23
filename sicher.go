@@ -20,7 +20,7 @@ import (
 
 var delimiter = "==--=="
 var defaultEnv = "dev"
-var DefaultEnvStyle = BASIC
+var DefaultEnvStyle = DOTENV
 var (
 	execCmd               = exec.Command
 	stdIn   io.ReadWriter = os.Stdin
@@ -55,7 +55,7 @@ func New(environment string, path string) *sicher {
 		path = "."
 	}
 	path, _ = filepath.Abs(path)
-	return &sicher{Path: path + "/", Environment: environment, data: make(map[string]string), envStyle: BASIC}
+	return &sicher{Path: path + "/", Environment: environment, data: make(map[string]string), envStyle: DOTENV}
 }
 
 // Initialize initializes the sicher project and creates the necessary files
@@ -291,8 +291,8 @@ func (s *sicher) LoadEnv(prefix string, configFile interface{}) error {
 }
 
 func (s *sicher) SetEnvStyle(style string) {
-	if style != "basic" && style != "yaml" && style != "yml" {
-		fmt.Println("Invalid style: Select one of basic, yml, or yaml")
+	if style != "dotenv" && style != "yaml" && style != "yml" {
+		fmt.Println("Invalid style: Select one of dotenv, yml, or yaml")
 		os.Exit(1)
 	}
 	s.envStyle = EnvStyle(style)

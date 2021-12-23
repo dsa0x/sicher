@@ -45,7 +45,7 @@ PORT=8080
 URI=localhost
 #OLD_PORT=5000
 	`)
-	err := parseConfig(cfg, enMap, "basic")
+	err := parseConfig(cfg, enMap, "dotenv")
 	if err != nil {
 		t.Errorf("Unable to parse config; %v", err)
 	}
@@ -67,7 +67,7 @@ URI=localhost
 
 	parseConfig(cfg, enMap, "yaml")
 	if len(enMap) != 0 {
-		t.Errorf("Expected basic style env not be be parseable with yaml envType")
+		t.Errorf("Expected dotenv style env not be be parseable with yaml envType")
 	}
 }
 func TestYamlParseConfig(t *testing.T) {

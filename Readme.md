@@ -38,12 +38,12 @@ sicher init
 
 **_Optional flags:_**
 
-| flag       | description                                                           | default | options       |
-| ---------- | --------------------------------------------------------------------- | ------- | ------------- |
-| -env       | set the environment name                                              | dev     |               |
-| -path      | set the path to the credentials file                                  | .       |               |
-| -style     | set the style of the decrypted credentials file                       | basic   | basic or yaml |
-| -gitignore | path to the gitignore file. the key file will be added here, if given |         |               |
+| flag       | description                                                           | default | options        |
+| ---------- | --------------------------------------------------------------------- | ------- | -------------- |
+| -env       | set the environment name                                              | dev     |                |
+| -path      | set the path to the credentials file                                  | .       |                |
+| -style     | set the style of the decrypted credentials file                       | dotenv  | dotenv or yaml |
+| -gitignore | path to the gitignore file. the key file will be added here, if given |         |                |
 
 This will create a key file `{environment}.key` and an encrypted credentials file `{environment}.enc` in the current directory. The environment name is optional and defaults to `dev`, but can be set to anything else with the `-env` flag.
 
@@ -55,12 +55,12 @@ sicher edit
 
 **_Optional flags:_**
 
-| flag    | description                                     | default | options       |
-| ------- | ----------------------------------------------- | ------- | ------------- |
-| -env    | set the environment name                        | dev     |               |
-| -path   | set the path to the credentials file            | .       |               |
-| -editor | set the editor to use                           | vim     | vim, nano, vi |
-| -style  | set the style of the decrypted credentials file | basic   | basic or yaml |
+| flag    | description                                     | default | options        |
+| ------- | ----------------------------------------------- | ------- | -------------- |
+| -env    | set the environment name                        | dev     |                |
+| -path   | set the path to the credentials file            | .       |                |
+| -editor | set the editor to use                           | vim     | vim, nano, vi  |
+| -style  | set the style of the decrypted credentials file | dotenv  | dotenv or yaml |
 
 This will create a temporary file, decrypt the credentials into it, and open it in your editor. The editor defaults to `vim`, but can be also set to `nano` or `vi` with the `-editor` flag. The temporary file is destroyed after each save, and the encrypted credentials file is updated with the new content.
 
@@ -85,7 +85,7 @@ func main() {
 	var config Config
 
 	s := sicher.New("dev", ".")
-	s.SetEnvStyle("yaml") // default is basic
+	s.SetEnvStyle("yaml") // default is dotenv
 	err := s.LoadEnv("", &cfg)
 	if err != nil {
 		fmt.Println(err)
@@ -105,7 +105,7 @@ The `LoadEnv` function will load the credentials from the encrypted file `{envir
 
 All env files should be in the format like the example below:
 
-For `basic envType`:
+For `dotenv`:
 
 ```
 PORT=8080
@@ -114,7 +114,7 @@ MONGO_DB_NAME=sicher
 APP_URL=http://localhost:8080
 ```
 
-For `Yaml envType`:
+For `yaml`:
 
 ```
 PORT:8080

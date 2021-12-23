@@ -31,7 +31,7 @@ sicher edit
 func init() {
 	flag.StringVar(&pathFlag, "path", ".", "Path to the project")
 	flag.StringVar(&envFlag, "env", "dev", "Environment to use")
-	flag.StringVar(&styleFlag, "style", string(sicher.DefaultEnvStyle), "Env file style. Valid values are basic and yaml")
+	flag.StringVar(&styleFlag, "style", string(sicher.DefaultEnvStyle), "Env file style. Valid values are dotenv and yaml")
 	flag.StringVar(&editorFlag, "editor", "vim", "Select editor. vim | vi | nano")
 	flag.StringVar(&gitignorePathFlag, "gitignore", ".", "Path to the gitignore file")
 
