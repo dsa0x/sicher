@@ -1,6 +1,7 @@
 package sicher
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -41,7 +42,7 @@ func TestSicherInitialize(t *testing.T) {
 
 	s, encPath, keyPath := setupTest()
 
-	s.Initialize()
+	s.Initialize(os.Stdin)
 
 	f, err := os.Open(encPath)
 	if err != nil {
@@ -62,15 +63,87 @@ func TestSicherInitialize(t *testing.T) {
 		f.Close()
 	})
 
-	t.Logf("Credential and key file have been created successfully")
+}
 
+func TestSicherInitializeExistingCredOverwrite(t *testing.T) {
+
+	s, encPath, keyPath := setupTest()
+
+	f, err := os.Create(encPath)
+	if err != nil {
+		t.Errorf("Expected credential file to be created; got error %v", err)
+	}
+	f.Write([]byte("test"))
+
+	buf := bytes.Buffer{}
+	buf.WriteString("yes")
+
+	s.Initialize(&buf)
+
+	f, err = os.Open(encPath)
+	if err != nil {
+		t.Errorf("Expected credential file to have been created; got error %v", err)
+	}
+	f, err = os.Open(keyPath)
+	if err != nil {
+		t.Errorf("Expected key file to have been created; got error %v", err)
+	}
+
+	// get path to the gitignore file and cleanup
+	gitPath := strings.Replace(encPath, fmt.Sprintf("%s.enc", s.Environment), ".gitignore", 1)
+
+	t.Cleanup(func() {
+		os.Remove(encPath)
+		os.Remove(keyPath)
+		os.Remove(gitPath)
+		f.Close()
+	})
+
+	t.Logf("Expects credential file to be overwritten if user confirms with 'yes'")
+}
+
+func TestSicherInitializeExistingCredNoOverwrite(t *testing.T) {
+
+	s, encPath, keyPath := setupTest()
+
+	f, err := os.Create(encPath)
+	if err != nil {
+		t.Errorf("Expected credential file to be created; got error %v", err)
+	}
+	f.Write([]byte("test"))
+
+	buf := bytes.Buffer{}
+	buf.WriteString("n")
+
+	s.Initialize(&buf)
+
+	f, err = os.Open(encPath)
+	if err != nil {
+		t.Errorf("Expected credential file to have been created; got error %v", err)
+	}
+	f, err = os.Open(keyPath)
+	if err == nil {
+		t.Errorf("Expected key file to not have been created as user chose not to overwrite")
+	}
+
+	// get path to the gitignore file and cleanup
+	gitPath := strings.Replace(encPath, fmt.Sprintf("%s.enc", s.Environment), ".gitignore", 1)
+
+	t.Cleanup(func() {
+		os.Remove(encPath)
+		os.Remove(keyPath)
+		os.Remove(gitPath)
+		f.Close()
+	})
+
+	t.Logf("Expects key file to not have been created as user chose not to overwrite")
 }
 
 func TestLoadEnv(t *testing.T) {
 
 	s, encPath, keyPath := setupTest()
 
-	s.Initialize()
+	s.Initialize(os.Stdin)
 
 	f, err := os.Open(encPath)
 	if err != nil {
@@ -82,7 +155,7 @@ func TestLoadEnv(t *testing.T) {
 	}
 
 	mp := make(map[string]string)
-	err = s.LoadEnv("", &mp)
+	err = s.LoadEnv("", &mp, "basic")
 	if err != nil {
 		t.Errorf("Expected to load envirnoment variables; got error %v", err)
 	}

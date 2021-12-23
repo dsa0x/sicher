@@ -7,14 +7,13 @@ import (
 )
 
 // configure reads the credentials file and sets the environment variables
-func (s *sicher) configure() {
+func (s *sicher) configure(envType EnvType) {
 
 	if s.Environment == "" {
 		fmt.Println("Environment not set")
 		return
 	}
 	// read the encryption key
-	fmt.Printf("%s%s.key", s.Path, s.Environment)
 	key, err := os.ReadFile(fmt.Sprintf("%s%s.key", s.Path, s.Environment))
 	if err != nil {
 		fmt.Printf("encryption key (%s.key) is not available. Create one by running the cli with init flag.\n", s.Environment)
@@ -49,9 +48,9 @@ func (s *sicher) configure() {
 		return
 	}
 
-	err = parseConfig(plaintext, s.data)
+	err = parseConfig(plaintext, s.data, envType)
 	if err != nil {
-		fmt.Printf("Error decoding credentials: %s\n", err)
+		fmt.Printf("Error parsing env file: %s\n", err)
 		return
 	}
 

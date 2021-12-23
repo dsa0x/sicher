@@ -38,14 +38,46 @@ func TestGenerateKey(t *testing.T) {
 	}
 }
 
-func TestParseConfig(t *testing.T) {
+func TestBasicParseConfig(t *testing.T) {
 	enMap := make(map[string]string)
 	cfg := []byte(`
 PORT=8080
 URI=localhost
 #OLD_PORT=5000
 	`)
-	err := parseConfig(cfg, enMap)
+	err := parseConfig(cfg, enMap, "basic")
+	if err != nil {
+		t.Errorf("Unable to parse config; %v", err)
+	}
+
+	port, ok := enMap["PORT"]
+	if !ok {
+		t.Errorf("Expected config to have been marshalled into map")
+	}
+
+	if port != "8080" {
+		t.Errorf("Expected value to be %s, got %s", "8080", port)
+	}
+
+	if enMap["OLD_PORT"] != "" {
+		t.Errorf("Expected ignored value to not be parsed")
+	}
+
+	enMap = make(map[string]string)
+
+	parseConfig(cfg, enMap, "yaml")
+	if len(enMap) != 0 {
+		t.Errorf("Expected basic style env not be be parseable with yaml envType")
+	}
+}
+func TestYamlParseConfig(t *testing.T) {
+	enMap := make(map[string]string)
+	cfg := []byte(`
+PORT:8080
+URI:localhost
+#OLD_PORT:5000
+	`)
+	err := parseConfig(cfg, enMap, "yaml")
 	if err != nil {
 		t.Errorf("Unable to parse config; %v", err)
 	}

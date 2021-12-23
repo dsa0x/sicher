@@ -44,7 +44,7 @@ func Execute() {
 	s := sicher.New(envFlag, pathFlag)
 	switch command {
 	case "init":
-		s.Initialize()
+		s.Initialize(os.Stdin)
 	case "edit":
 		s.Edit(editorFlag)
 	}

@@ -1,4 +1,4 @@
-package example
+package main
 
 import (
 	"fmt"
@@ -7,20 +7,19 @@ import (
 )
 
 type Config struct {
-	Port        string `required:"false" envconfig:"PORT"`
-	MongoDbURI  string `required:"true" envconfig:"MONGO_DB_URI"`
-	MongoDbName string `required:"true" envconfig:"MONGO_DB_NAME"`
-	JWTSecret   string `required:"false" envconfig:"JWT_SECRET"`
+	Port        string `required:"false" env:"PORT"`
+	MongoDbURI  string `required:"false" env:"MONGO_DB_URI"`
+	MongoDbName string `required:"false" env:"MONGO_DB_NAME"`
+	TestKey     string `required:"false" env:"TESTKEY"`
 }
 
 // LoadConfigStruct Loads config into a struct
 func LoadConfigStruct() {
 
 	var cfg Config
-	// cfg := make(map[string]string)
 
 	s := sicher.New("dev")
-	err := s.LoadEnv("", &cfg)
+	err := s.LoadEnv("", &cfg, "basic")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -34,10 +33,15 @@ func LoadConfigMap() {
 	cfg := make(map[string]string)
 
 	s := sicher.New("dev")
-	err := s.LoadEnv("", &cfg)
+	err := s.LoadEnv("", &cfg, "yaml")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println(cfg)
+}
+
+func main() {
+	LoadConfigStruct()
+	LoadConfigMap()
 }

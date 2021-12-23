@@ -14,6 +14,20 @@ import (
 	"time"
 )
 
+type EnvType string
+
+const (
+	YAML  EnvType = "yaml"
+	YML   EnvType = "yml"
+	BASIC EnvType = "basic"
+)
+
+var EnvTypeDelim = map[EnvType]string{
+	YAML:  ":",
+	YML:   ":",
+	BASIC: "=",
+}
+
 // cleanUpFile removes the given file
 func cleanUpFile(filePath string) {
 	err := os.Remove(filePath)
@@ -53,21 +67,28 @@ func generateKey() string {
 }
 
 // parseConfig parses the environment variables into a map
-func parseConfig(config []byte, store map[string]string) (err error) {
+func parseConfig(config []byte, store map[string]string, envType EnvType) (err error) {
+
+	if envType != BASIC && envType != YAML && envType != YML {
+		return errors.New("invalid environment type")
+	}
+
+	delim := EnvTypeDelim[envType]
+
 	var b bytes.Buffer
 	b.Write(config)
 	sc := bufio.NewScanner(&b)
 
 	for sc.Scan() {
-		line := sc.Text()
-		cfgLine := strings.Split(line, "=")
+		line := strings.TrimSpace(sc.Text())
+		cfgLine := strings.Split(line, delim)
 
-		// ignore commented lines
+		// ignore commented lines and invalid lines
 		if len(cfgLine) < 2 || canIgnore(line) {
 			continue
 		}
 
-		store[cfgLine[0]] = strings.Join(cfgLine[1:], "=")
+		store[cfgLine[0]] = strings.Join(cfgLine[1:], delim)
 		if err == io.EOF {
 			return nil
 		}

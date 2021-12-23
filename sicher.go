@@ -49,7 +49,7 @@ func New(environment string, path ...string) *sicher {
 }
 
 // Initialize initializes the sicher project and creates the necessary files
-func (s *sicher) Initialize() {
+func (s *sicher) Initialize(scanReader io.Reader) {
 	key := generateKey()
 
 	// create the key file if it doesn't exist
@@ -61,26 +61,9 @@ func (s *sicher) Initialize() {
 	defer keyFile.Close()
 
 	keyFileStats, _ := keyFile.Stat()
-	encFileFlag := 0
-
-	// if keyfile is new, write the key and truncate the encrypted file so it can be freshly written to
-	// Absence of keyfile indicates that the project is new or keyfile is lost
-	// if keyfile is lost, the encrypted file cannot be decrypted and the user needs to re-initialize
-	if keyFileStats.Size() < 1 {
-		_, err = keyFile.WriteString(key)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		encFileFlag = os.O_CREATE | os.O_RDWR | os.O_TRUNC
-	} else {
-		// if keyfile exists, append to it
-		encFileFlag = os.O_APPEND | os.O_CREATE | os.O_WRONLY
-	}
 
 	// create the encrypted credentials file if it doesn't exist
-	// the credentials file is truncated if the keyfile is new
-	encFile, err := os.OpenFile(fmt.Sprintf("%s%s.enc", s.Path, s.Environment), encFileFlag, 0600)
+	encFile, err := os.OpenFile(fmt.Sprintf("%s%s.enc", s.Path, s.Environment), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0600)
 	if err != nil {
 		log.Println(err)
 		return
@@ -88,6 +71,42 @@ func (s *sicher) Initialize() {
 	defer encFile.Close()
 
 	encFileStats, _ := encFile.Stat()
+
+	// if keyfile is new
+	// Absence of keyfile indicates that the project is new or keyfile is lost
+	// if keyfile is lost, the encrypted file cannot be decrypted,
+	// and the user needs to re-initialize or obtain the original key
+	if keyFileStats.Size() < 1 {
+
+		// if encrypted file exists
+		// ask user if they want to overwrite the encrypted file
+		// if yes, truncate file and continue
+		// else cancel
+		if encFileStats.Size() > 1 {
+			fmt.Printf("An encrypted credentials file already exist, do you want to overwrite it? \n Enter 'yes' or 'y' to accept.\n")
+			rd := bufio.NewScanner(scanReader)
+			for rd.Scan() {
+				line := rd.Text()
+				if line == "yes" || line == "y" {
+					encFile.Truncate(0)
+					break
+				} else {
+					os.Remove(keyFile.Name())
+					fmt.Println("Exiting. Leaving credentials file unmodified")
+					return
+				}
+			}
+		}
+
+		_, err = keyFile.WriteString(key)
+		if err != nil {
+			fmt.Printf("Error saving key; %v", err)
+			return
+		}
+	}
+
+	// stats will have changed if the file was truncated
+	encFileStats, _ = encFile.Stat()
 
 	// if the encrypted file is new, write some random data to it
 	if encFileStats.Size() < 1 {
@@ -238,15 +257,12 @@ func (s *sicher) Edit(editor ...string) {
 
 }
 
-func (s *sicher) loadEnv() {
-	s.configure()
-	s.setEnv()
-}
-
 // LoadEnv loads the environment variables from the encrypted credentials file into the config gile.
 // configFile can be a struct or map[string]string
-func (s *sicher) LoadEnv(prefix string, configFile interface{}) error {
-	s.loadEnv()
+// envType can be "basic" or "yaml"
+func (s *sicher) LoadEnv(prefix string, configFile interface{}, envType EnvType) error {
+	s.configure(envType)
+	s.setEnv()
 
 	d := reflect.ValueOf(configFile)
 	if d.Kind() == reflect.Ptr {
@@ -273,7 +289,7 @@ func (s *sicher) LoadEnv(prefix string, configFile interface{}) error {
 		field := d.Field(i)
 		fieldType := d.Type().Field(i)
 		isRequired := fieldType.Tag.Get("required")
-		key := fieldType.Tag.Get("envconfig")
+		key := fieldType.Tag.Get("env")
 
 		tagName := key
 		if prefix != "" {
