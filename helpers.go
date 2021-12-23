@@ -108,3 +108,33 @@ func canIgnore(line string) bool {
 	line = strings.TrimSpace(line)
 	return strings.HasPrefix(line, `#`) || len(line) == 0
 }
+
+func addToGitignore(filePath, gitignorePath string) error {
+	f, err := os.OpenFile(fmt.Sprintf("%s.gitignore", gitignorePath), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	fr := bufio.NewReader(f)
+
+	// check if the key file is already in the .gitignore file before adding it
+	// if it is, don't add it again
+	for err == nil {
+		str, _, err := fr.ReadLine()
+		if err != nil && err != io.EOF {
+			return err
+		}
+
+		if string(str) == filePath {
+			return nil
+		}
+
+		if err == io.EOF {
+			break
+		}
+	}
+
+	f.Write([]byte("\n" + filePath))
+	return nil
+}

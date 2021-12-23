@@ -32,6 +32,9 @@ type sicher struct {
 	data        map[string]string `yaml:"data"`
 
 	envStyle EnvStyle
+
+	// gitignorePath is the path to the .gitignore file
+	gitignorePath string
 }
 
 // New creates a new sicher struct
@@ -126,33 +129,12 @@ func (s *sicher) Initialize(scanReader io.Reader) {
 	}
 
 	// add the key file to gitignore
-	f, err := os.OpenFile(fmt.Sprintf("%s.gitignore", s.Path), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer f.Close()
-
-	fr := bufio.NewReader(f)
-
-	// check if the key file is already in the .gitignore file before adding it
-	// if it is, don't add it again
-	for err == nil {
-		str, _, err := fr.ReadLine()
-		if err != nil && err != io.EOF {
+	if s.gitignorePath != "" {
+		err = addToGitignore(fmt.Sprintf("%s.key", s.Environment), s.gitignorePath)
+		if err != nil {
 			log.Println(err)
-			return
-		}
-
-		if string(str) == fmt.Sprintf("%s.key", s.Environment) {
-			return
-		}
-
-		if err == io.EOF {
-			break
 		}
 	}
-
-	f.Write([]byte(fmt.Sprintf("\n%s.key", s.Environment)))
 }
 
 // Edit opens the encrypted credentials in a temporary file for editing. Default editor is vim.
@@ -319,4 +301,9 @@ func (s *sicher) SetEnvStyle(style string) {
 		os.Exit(1)
 	}
 	s.envStyle = EnvStyle(style)
+}
+
+func (s *sicher) SetGitignorePath(path string) {
+	path, _ = filepath.Abs(path)
+	s.gitignorePath = path
 }

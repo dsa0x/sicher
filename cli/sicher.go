@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	pathFlag   string
-	envFlag    string
-	editorFlag string
-	styleFlag  string
+	pathFlag          string
+	envFlag           string
+	editorFlag        string
+	styleFlag         string
+	gitignorePathFlag string
 )
 
 var writer io.Writer = os.Stderr
@@ -32,6 +33,7 @@ func init() {
 	flag.StringVar(&envFlag, "env", "dev", "Environment to use")
 	flag.StringVar(&styleFlag, "style", string(sicher.DefaultEnvStyle), "Env file style. Valid values are basic and yaml")
 	flag.StringVar(&editorFlag, "editor", "vim", "Select editor. vim | vi | nano")
+	flag.StringVar(&gitignorePathFlag, "gitignore", ".", "Path to the gitignore file")
 
 	flag.ErrHelp = errors.New(errHelp)
 	flag.Usage = func() {

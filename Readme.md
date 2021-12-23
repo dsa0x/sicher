@@ -38,11 +38,12 @@ sicher init
 
 **_Optional flags:_**
 
-| flag   | description                                     | default | options       |
-| ------ | ----------------------------------------------- | ------- | ------------- |
-| -env   | set the environment name                        | dev     |               |
-| -path  | set the path to the credentials file            | .       |               |
-| -style | set the style of the decrypted credentials file | basic   | basic or yaml |
+| flag       | description                                                           | default | options       |
+| ---------- | --------------------------------------------------------------------- | ------- | ------------- |
+| -env       | set the environment name                                              | dev     |               |
+| -path      | set the path to the credentials file                                  | .       |               |
+| -style     | set the style of the decrypted credentials file                       | basic   | basic or yaml |
+| -gitignore | path to the gitignore file. the key file will be added here, if given |         |               |
 
 This will create a key file `{environment}.key` and an encrypted credentials file `{environment}.enc` in the current directory. The environment name is optional and defaults to `dev`, but can be set to anything else with the `-env` flag.
 
@@ -125,7 +126,6 @@ APP_URL:http://localhost:8080
 
 ### Todo
 
-- Make addition to the `.gitignore` file optional
 - Add a `-force` flag to `sicher init` to overwrite the encrypted file if it already exists
 - Enable support for nested yaml env files
 - Add support for other types of encryption
