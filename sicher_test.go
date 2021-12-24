@@ -86,15 +86,6 @@ func TestEditSuccess(t *testing.T) {
 		t.Errorf("Expected no error, got %v", err)
 	}
 
-	if !bytes.Contains(buf.Bytes(), []byte("TESTKEY=loremipsum")) {
-		t.Errorf("Expected credential file to be opened and contain TESTKEY=loremipsum; got %s", buf.String())
-		return
-	}
-	if !bytes.Contains(buf.Bytes(), []byte("File encrypted and saved")) {
-		t.Errorf("Expected file to be saved and message to be displayed, got %s", buf.String())
-		return
-	}
-
 	// get path to the gitignore file and cleanup
 	gitPath := strings.Replace(encPath, fmt.Sprintf("%s.enc", s.Environment), ".gitignore", 1)
 
