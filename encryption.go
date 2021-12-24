@@ -10,7 +10,11 @@ import (
 
 // encrypt encrypts the given plaintext with the given key and returns the ciphertext
 func encrypt(key string, fileData []byte) (nonce []byte, ciphertext []byte, err error) {
-	hKey, _ := hex.DecodeString(key)
+	hKey, err := hex.DecodeString(key)
+	if err != nil {
+		return
+	}
+
 	block, err := aes.NewCipher(hKey)
 	if err != nil {
 		return
@@ -31,7 +35,11 @@ func encrypt(key string, fileData []byte) (nonce []byte, ciphertext []byte, err 
 }
 
 func decrypt(key string, nonce, text []byte) (plaintext []byte, err error) {
-	hKey, _ := hex.DecodeString(key)
+	hKey, err := hex.DecodeString(key)
+	if err != nil {
+		return
+	}
+
 	block, err := aes.NewCipher(hKey)
 	if err != nil {
 		return

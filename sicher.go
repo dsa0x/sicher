@@ -70,7 +70,10 @@ func (s *sicher) Initialize(scanReader io.Reader) error {
 	}
 	defer keyFile.Close()
 
-	keyFileStats, _ := keyFile.Stat()
+	keyFileStats, err := keyFile.Stat()
+	if err != nil {
+		return fmt.Errorf("error getting key file stats: %s", err)
+	}
 
 	// create the encrypted credentials file if it doesn't exist
 	encFile, err := os.OpenFile(fmt.Sprintf("%s%s.enc", s.Path, s.Environment), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0600)
@@ -79,7 +82,10 @@ func (s *sicher) Initialize(scanReader io.Reader) error {
 	}
 	defer encFile.Close()
 
-	encFileStats, _ := encFile.Stat()
+	encFileStats, err := encFile.Stat()
+	if err != nil {
+		return fmt.Errorf("error getting key file stats: %s", err)
+	}
 
 	// if keyfile is new
 	// Absence of keyfile indicates that the project is new or keyfile is lost
@@ -114,7 +120,10 @@ func (s *sicher) Initialize(scanReader io.Reader) error {
 	}
 
 	// stats will have changed if the file was truncated
-	encFileStats, _ = encFile.Stat()
+	encFileStats, err = encFile.Stat()
+	if err != nil {
+		return fmt.Errorf("error getting key file stats: %s", err)
+	}
 
 	// if the encrypted file is new, write some random data to it
 	if encFileStats.Size() < 1 {
