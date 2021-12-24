@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Go test for ${{ matrix.go-version }} on ${{ matrix.os }}
+      - name: Set up workflow for ${{ matrix.go-version }} on ${{ matrix.os }}
         uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}

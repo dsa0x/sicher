@@ -17,6 +17,8 @@ import (
 	"reflect"
 	"regexp"
 	"time"
+
+	"github.com/juju/fslock"
 )
 
 var delimiter = "==--=="
@@ -191,8 +193,11 @@ func (s *sicher) Edit(editor ...string) error {
 	defer credFile.Close()
 
 	// lock file to enable only one edit at a time
-	credFileLock := newFileLock(credFile)
-	credFileLock.LockWithTimeout(time.Second * 10)
+	credFileLock := fslock.New(credFile.Name()) //newFileLock(credFile)
+	err = credFileLock.LockWithTimeout(time.Second * 10)
+	if err != nil {
+		return fmt.Errorf("error locking file: %s", err)
+	}
 	defer credFileLock.Unlock()
 
 	var buf bytes.Buffer
