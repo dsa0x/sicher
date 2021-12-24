@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"golang.org/x/sys/unix"
+	"syscall"
 )
 
 type fileLock struct {
@@ -20,7 +20,7 @@ func newFileLock(file *os.File) *fileLock {
 }
 
 func (l *fileLock) Lock() bool {
-	if err := unix.Flock(int(l.file.Fd()), unix.LOCK_EX); err != nil {
+	if err := syscall.Flock(int(l.file.Fd()), syscall.LOCK_EX); err != nil {
 		log.Fatalf("file lock error: %v\n", err)
 		return false
 	}
@@ -28,7 +28,7 @@ func (l *fileLock) Lock() bool {
 }
 
 func (l *fileLock) Unlock() {
-	if err := unix.Flock(int(l.file.Fd()), unix.LOCK_UN); err != nil {
+	if err := syscall.Flock(int(l.file.Fd()), syscall.LOCK_UN); err != nil {
 		log.Fatalf("file unlock error: %v\n", err)
 	}
 }
