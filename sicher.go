@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"time"
 )
 
 var delimiter = "==--=="
@@ -177,7 +178,7 @@ func (s *sicher) Edit(editor ...string) error {
 		if os.Getenv(masterKey) != "" {
 			key = []byte(os.Getenv(masterKey))
 		} else {
-			return fmt.Errorf("encryption key(%s.key) is not available. Create one by running the cli with init flag", s.Environment)
+			return fmt.Errorf("encryption key(%s.key) is not available. Provide a key file or enter one through the command line", s.Environment)
 		}
 	}
 	strKey := string(key)
@@ -188,6 +189,11 @@ func (s *sicher) Edit(editor ...string) error {
 		return fmt.Errorf("%v", err)
 	}
 	defer credFile.Close()
+
+	// lock file to enable only one edit at a time
+	credFileLock := newFileLock(credFile)
+	credFileLock.LockWithTimeout(time.Second * 10)
+	defer credFileLock.Unlock()
 
 	var buf bytes.Buffer
 	_, err = io.Copy(&buf, credFile)
@@ -202,7 +208,6 @@ func (s *sicher) Edit(editor ...string) error {
 		return fmt.Errorf("error creating temp file %v", err)
 	}
 	defer f.Close()
-	f.Chmod(0600)
 	filePath := f.Name()
 	defer cleanUpFile(filePath)
 
@@ -212,8 +217,9 @@ func (s *sicher) Edit(editor ...string) error {
 		return fmt.Errorf("error decoding encryption file: %s", err)
 	}
 
+	var plaintext []byte
 	if nonce != nil && fileText != nil {
-		plaintext, err := decrypt(strKey, nonce, fileText)
+		plaintext, err = decrypt(strKey, nonce, fileText)
 		if err != nil {
 			return fmt.Errorf("error decrypting file: %s", err)
 		}
@@ -246,11 +252,16 @@ func (s *sicher) Edit(editor ...string) error {
 		return fmt.Errorf("error reading credentials file %v ", err)
 	}
 
+	// if no file changes, dont generate new encrypted file
+	if bytes.Equal(file, plaintext) {
+		fmt.Fprintf(stdOut, "No changes made.\n")
+		return nil
+	}
+
 	//encrypt and overwrite credentials file
 	// the encrypted file is encoded in hexadecimal format
 	nonce, encrypted, err := encrypt(strKey, file)
 	if err != nil {
-
 		return fmt.Errorf("error encrypting file: %s ", err)
 	}
 
