@@ -53,6 +53,14 @@ This will create a key file `{environment}.key` and an encrypted credentials fil
 sicher edit
 ```
 
+OR
+
+to use the key from environment variable:
+
+```shell
+env SICHER_MASTER_KEY=`{YOUR_KEY_HERE}` sicher edit
+```
+
 **_Optional flags:_**
 
 | flag    | description                                     | default | options             |
@@ -104,12 +112,6 @@ The `LoadEnv` function will load the credentials from the encrypted file `{envir
 | config | the config object                       | struct or map |
 
 The key also be loaded from the environment variable `SICHER_MASTER_KEY`. In production, storing the key in the environment variable is recommended.
-
-To use the key from environment variable:
-
-```shell
-env SICHER_MASTER_KEY=`{YOUR_KEY_HERE}` sicher edit
-```
 
 All env files should be in the format like the example below:
 

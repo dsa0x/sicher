@@ -202,6 +202,7 @@ func (s *sicher) Edit(editor ...string) error {
 		return fmt.Errorf("error creating temp file %v", err)
 	}
 	defer f.Close()
+	f.Chmod(0600)
 	filePath := f.Name()
 	defer cleanUpFile(filePath)
 
