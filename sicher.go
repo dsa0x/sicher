@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
-	"time"
 
 	"github.com/juju/fslock"
 )
@@ -194,12 +193,14 @@ func (s *sicher) Edit(editor ...string) error {
 
 	// lock file to enable only one edit at a time
 	credFileLock := fslock.New(credFile.Name()) //newFileLock(credFile)
-	err = credFileLock.LockWithTimeout(time.Second * 10)
+	err = credFileLock.TryLock()
 	if err != nil {
+		if err == fslock.ErrLocked {
+			return fmt.Errorf("%s: File is in use in another terminal", err)
+		}
 		return fmt.Errorf("error locking file: %s", err)
 	}
 	defer credFileLock.Unlock()
-
 	var buf bytes.Buffer
 	_, err = io.Copy(&buf, credFile)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -84,6 +85,56 @@ func TestEditSuccess(t *testing.T) {
 	err := s.Edit("vim")
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
+	}
+
+	// get path to the gitignore file and cleanup
+	gitPath := strings.Replace(encPath, fmt.Sprintf("%s.enc", s.Environment), ".gitignore", 1)
+
+	t.Cleanup(func() {
+		os.Remove(encPath)
+		os.Remove(keyPath)
+		os.Remove(gitPath)
+	})
+}
+func TestEditFileLock(t *testing.T) {
+	oldExecCmd := execCmd
+	defer func() { execCmd = oldExecCmd }()
+	s, encPath, keyPath := setupTest()
+
+	s.Initialize(os.Stdin)
+	buf := bytes.Buffer{}
+
+	execCmd = func(cmd string, args ...string) *exec.Cmd {
+		stdIn, stdOut, stdErr = &buf, &buf, &buf
+
+		if cmd != "vim" {
+			t.Errorf("Expected command to be vim, got %s", cmd)
+		}
+		return exec.Command("cat", args...)
+	}
+
+	var wg sync.WaitGroup
+	chErr := make(chan error, 1)
+	for i := 0; i < 2; i++ {
+		wg.Add(1)
+		go func() {
+			err := s.Edit("vim")
+			if err != nil {
+				chErr <- err
+			}
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+
+	select {
+	case err := <-chErr:
+		if err == nil {
+			t.Errorf("Expected file to be locked and exit error, got nil error")
+		}
+	default:
+		t.Errorf("Expected file to be locked and exit error, received no error")
 	}
 
 	// get path to the gitignore file and cleanup
