@@ -2,6 +2,7 @@ package sicher
 
 import (
 	"encoding/hex"
+	"fmt"
 	"os"
 	"testing"
 )
@@ -70,6 +71,96 @@ URI=localhost
 		t.Errorf("Expected dotenv style env not be be parseable with yaml envType")
 	}
 }
+func TestParseConfig(t *testing.T) {
+
+	tests := []struct {
+		text     string
+		expected map[string]string
+		envType  string
+	}{
+		{
+			text: `
+			PORT:8080
+			URI:localhost
+			#OLD_PORT:5000
+				`,
+			expected: map[string]string{
+				"PORT": "8080",
+				"URI":  "localhost",
+			},
+			envType: "yaml",
+		},
+		{
+			text: `
+			PORT=8080
+			URI=localhost
+			#OLD_PORT=5000
+				`,
+			expected: map[string]string{
+				"PORT": "8080",
+				"URI":  "localhost",
+			},
+			envType: "dotenv",
+		},
+		{
+			text: `
+			PORT=8080
+			URI=localhost
+			#OLD_PORT=5000
+			KEY=value=ndsjhjdghdhg
+				`,
+			expected: map[string]string{
+				"PORT": "8080",
+				"URI":  "localhost",
+				"KEY":  "value=ndsjhjdghdhg",
+			},
+			envType: "dotenv",
+		},
+		{
+			text: `
+			PORT:8080
+			URI=localhost
+				`,
+			expected: map[string]string{
+				"PORT": "8080",
+			},
+			envType: "yaml",
+		},
+		{
+			text: `
+			PORT:8080
+			URI=localhost
+			SOME_KEY:somevalue=jsfhjdghdhg
+				`,
+			expected: map[string]string{
+				"URI": "localhost",
+			},
+			envType: "dotenv",
+		},
+	}
+
+	for _, val := range tests {
+		enMap := make(map[string]string)
+		if err := parseConfig([]byte(val.text), enMap, EnvStyle(val.envType)); err != nil {
+			t.Errorf("Unable to parse config; %v", err)
+		}
+
+		t.Run(fmt.Sprintf("Envtype %s", val.envType), func(t *testing.T) {
+			for key, value := range val.expected {
+				if enMap[key] != value {
+					t.Errorf("Expected value to be %s, got %s", value, enMap[key])
+				}
+			}
+			for key, value := range enMap {
+				if val.expected[key] != value {
+					t.Errorf("Expected value to be %s, got %s", value, val.expected[key])
+				}
+			}
+		})
+	}
+
+}
+
 func TestYamlParseConfig(t *testing.T) {
 	enMap := make(map[string]string)
 	cfg := []byte(`

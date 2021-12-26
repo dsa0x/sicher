@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -33,6 +34,8 @@ var envStyleExt = map[EnvStyle]string{
 	YML:    "yml",
 	DOTENV: "env",
 }
+
+var envNameRegex = "^[a-zA-Z0-9_]*$"
 
 // cleanUpFile removes the given file
 func cleanUpFile(filePath string) {
@@ -91,6 +94,12 @@ func parseConfig(config []byte, store map[string]string, envType EnvStyle) (err 
 
 		// ignore commented lines and invalid lines
 		if len(cfgLine) < 2 || canIgnore(line) {
+			continue
+		}
+
+		// invalidate keys with invalid characters (only alphanumeric and _)
+		regexpKey := regexp.MustCompile(envNameRegex)
+		if !regexpKey.MatchString(cfgLine[0]) {
 			continue
 		}
 
