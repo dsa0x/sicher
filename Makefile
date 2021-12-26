@@ -1,6 +1,11 @@
-.PHONY: cli
-cli:
-		CGO_ENABLED=0 go build -o cmd cmd/cli/sicher.go
+path=cmd/sicher/main.go
 
-run-cli:
-		go run cmd/cli/main.go init
+.PHONY: build
+build:
+		CGO_ENABLED=0 go build -o cmd $(path)
+
+init:
+		go run $(path) init
+
+edit:
+		go run $(path) edit
