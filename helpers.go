@@ -78,11 +78,10 @@ func generateKey() string {
 // parseConfig parses the environment variables into a map
 func parseConfig(config []byte, store map[string]string, envType EnvStyle) (err error) {
 
-	if envType != DOTENV && envType != YAML && envType != YML {
+	delim, ok := envStyleDelim[envType]
+	if !ok {
 		return errors.New("invalid environment type")
 	}
-
-	delim := envStyleDelim[envType]
 
 	var b bytes.Buffer
 	b.Write(config)

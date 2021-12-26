@@ -147,11 +147,16 @@ type Config struct {
 
 If object is a map, the keys are the environment variables and the values are the values.
 
+### Note
+
+- Not tested with Windows.
+
 ### Todo or not todo
 
 - Add a `-force` flag to `sicher init` to overwrite the encrypted file if it already exists
 - Enable support for nested yaml env files
 - Add support for other types of encryption
+- Test on windows
 
 ### License
 
