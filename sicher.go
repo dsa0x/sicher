@@ -108,7 +108,7 @@ func (s *sicher) Initialize(scanReader io.Reader) error {
 					encFile.Truncate(0)
 					break
 				} else {
-					os.Remove(keyFile.Name())
+					cleanUpFile(keyFile.Name())
 					fmt.Println("Exiting. Leaving credentials file unmodified")
 					return nil
 				}
@@ -196,7 +196,7 @@ func (s *sicher) Edit(editor ...string) error {
 	err = credFileLock.TryLock()
 	if err != nil {
 		if err == fslock.ErrLocked {
-			return fmt.Errorf("%s: File is in use in another terminal", err)
+			return fmt.Errorf("file is in use in another terminal")
 		}
 		return fmt.Errorf("error locking file: %s", err)
 	}

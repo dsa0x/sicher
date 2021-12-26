@@ -152,8 +152,6 @@ If object is a map, the keys are the environment variables and the values are th
 - Add a `-force` flag to `sicher init` to overwrite the encrypted file if it already exists
 - Enable support for nested yaml env files
 - Add support for other types of encryption
-- Dont replace the file if the content is the same
-- test for Edit
 
 ### License
 
