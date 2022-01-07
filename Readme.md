@@ -19,7 +19,7 @@ To use sicher in your project, you need to install the go module as a library an
 Installing the library,
 
 ```shell
-go get github.com/dsaOx/sicher
+go get github.com/dsa0x/sicher
 ```
 
 Installing the command line interface,:
