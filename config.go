@@ -14,12 +14,16 @@ func (s *sicher) configure() {
 		return
 	}
 	// read the encryption key
-	key, err := os.ReadFile(fmt.Sprintf("%s%s.key", s.Path, s.Environment))
-	if err != nil {
-		fmt.Printf("encryption key (%s.key) is not available. Create one by running the cli with init flag.\n", s.Environment)
-		return
+
+	strKey := os.Getenv(masterKey)
+	if strKey == "" {
+		key, err := os.ReadFile(fmt.Sprintf("%s%s.key", s.Path, s.Environment))
+		if err != nil {
+			fmt.Printf("encryption key (%s.key) is not available. Create one by running the cli with init flag.\n", s.Environment)
+			return
+		}
+		strKey = string(key)
 	}
-	strKey := string(key)
 
 	// read the encrypted credentials file
 	credFile, err := os.ReadFile(fmt.Sprintf("%s%s.enc", s.Path, s.Environment))
