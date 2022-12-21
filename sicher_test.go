@@ -310,6 +310,46 @@ func TestLoadEnv(t *testing.T) {
 
 }
 
+func TestLoadEnv_KeyInEnv(t *testing.T) {
+
+	s, encPath, keyPath := setupTest()
+
+	s.Initialize(os.Stdin) // created key will not be used as a file
+
+	key, err := os.ReadFile(keyPath)
+	if err != nil {
+		t.Errorf("Expected key file to have been created; got error %v", err)
+	}
+	os.Remove(keyPath) // remove key file
+
+	f, err := os.Open(encPath)
+	if err != nil {
+		t.Errorf("Expected credential file to have been created; got error %v", err)
+	}
+
+	os.Setenv(masterKey, string(key))
+	mp := make(map[string]string)
+	err = s.LoadEnv("", &mp)
+	if err != nil {
+		t.Errorf("Expected to load envirnoment variables; got error %v", err)
+	}
+
+	if len(mp) != 1 {
+		t.Errorf("Expected config file to be been populated with env variables")
+	}
+
+	// get path to the gitignore file and cleanup
+	gitPath := strings.Replace(encPath, fmt.Sprintf("%s.enc", s.Environment), ".gitignore", 1)
+
+	t.Cleanup(func() {
+		os.Remove(encPath)
+		os.Remove(keyPath)
+		os.Remove(gitPath)
+		f.Close()
+	})
+
+}
+
 func TestSetEnv(t *testing.T) {
 	s, _, _ := setupTest()
 

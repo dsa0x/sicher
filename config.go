@@ -14,7 +14,6 @@ func (s *sicher) configure() {
 		return
 	}
 	// read the encryption key
-
 	strKey := os.Getenv(masterKey)
 	if strKey == "" {
 		key, err := os.ReadFile(fmt.Sprintf("%s%s.key", s.Path, s.Environment))
