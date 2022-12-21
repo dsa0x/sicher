@@ -174,15 +174,10 @@ func (s *sicher) Edit(editor ...string) error {
 	}
 
 	// read the encryption key. if key not in file, try getting from env
-	key, err := os.ReadFile(fmt.Sprintf("%s%s.key", s.Path, s.Environment))
+	key, err := s.getEncryptionKey(fmt.Sprintf("%s%s.key", s.Path, s.Environment))
 	if err != nil {
-		if os.Getenv(masterKey) != "" {
-			key = []byte(os.Getenv(masterKey))
-		} else {
-			return fmt.Errorf("encryption key(%s.key) is not available. Provide a key file or enter one through the command line", s.Environment)
-		}
+		return err
 	}
-	strKey := string(key)
 
 	// open the encrypted credentials file
 	credFile, err := os.OpenFile(fmt.Sprintf("%s%s.enc", s.Path, s.Environment), os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
@@ -225,7 +220,7 @@ func (s *sicher) Edit(editor ...string) error {
 
 	var plaintext []byte
 	if nonce != nil && fileText != nil {
-		plaintext, err = decrypt(strKey, nonce, fileText)
+		plaintext, err = decrypt(key, nonce, fileText)
 		if err != nil {
 			return fmt.Errorf("error decrypting file: %s", err)
 		}
@@ -266,7 +261,7 @@ func (s *sicher) Edit(editor ...string) error {
 
 	//encrypt and overwrite credentials file
 	// the encrypted file is encoded in hexadecimal format
-	nonce, encrypted, err := encrypt(strKey, file)
+	nonce, encrypted, err := encrypt(key, file)
 	if err != nil {
 		return fmt.Errorf("error encrypting file: %s ", err)
 	}
@@ -342,4 +337,16 @@ func (s *sicher) SetEnvStyle(style string) {
 func (s *sicher) SetGitignorePath(path string) {
 	path, _ = filepath.Abs(path)
 	s.gitignorePath = path
+}
+
+func (s *sicher) getEncryptionKey(filePath string) (string, error) {
+	encKey := os.Getenv(masterKey)
+	if encKey == "" {
+		key, err := os.ReadFile(filePath)
+		if err != nil {
+			return "", fmt.Errorf("encryption key(%s.key) is not available. Provide a key file or enter one through the command line", s.Environment)
+		}
+		encKey = string(key)
+	}
+	return encKey, nil
 }
