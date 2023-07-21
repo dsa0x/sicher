@@ -160,7 +160,7 @@ func (s *sicher) Edit(editor ...string) error {
 		editorName = "vim"
 	}
 
-	match, _ := regexp.MatchString("^(nano|n?vim|vi|code|)$", editorName)
+	match, _ := regexp.MatchString("^(nano|n?vim?|code|)$", editorName)
 	if !match {
 		return fmt.Errorf("invalid Command: Select one of vim, vi, code or nano as editor, or leave as empty")
 	}
