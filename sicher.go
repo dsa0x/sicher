@@ -15,7 +15,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
-	"regexp"
 
 	"github.com/juju/fslock"
 )
@@ -30,6 +29,14 @@ var (
 	stdOut  io.ReadWriter = os.Stdout
 	stdErr  io.ReadWriter = os.Stderr
 )
+
+var waitFlagmap = map[string]string{
+	"code": "--wait",
+	"gvim": "-f",
+	"mvim": "-f",
+	"subl": "--wait",
+	"vimr": "--wait",
+}
 
 type sicher struct {
 	// Path is the path to the project. If empty string, it defaults to the current directory
@@ -160,16 +167,12 @@ func (s *sicher) Edit(editor ...string) error {
 		editorName = "vim"
 	}
 
-	match, _ := regexp.MatchString("^(nano|vim|vi|code|)$", editorName)
-	if !match {
-		return fmt.Errorf("invalid Command: Select one of vim, vi, code or nano as editor, or leave as empty")
-	}
-
 	var cmdArgs []string
+
 	// waitOpt is needed to enable vscode to wait for the editor to close before continuing
-	var waitOpt string
-	if editorName == "code" {
-		waitOpt = "--wait"
+	waitOpt, ok := waitFlagmap[editorName]
+
+	if ok {
 		cmdArgs = append(cmdArgs, waitOpt)
 	}
 

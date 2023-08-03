@@ -169,6 +169,84 @@ func TestEditFail(t *testing.T) {
 	}
 }
 
+func TestEditAddsWaitFlag(t *testing.T) {
+	oldExecCmd := execCmd
+	defer func() { execCmd = oldExecCmd }()
+	s, encPath, keyPath := setupTest()
+
+	s.Initialize(os.Stdin)
+	buf := bytes.Buffer{}
+
+	editors := []string{"code", "subl", "vimr"}
+
+	for _, editor := range editors {
+		execCmd = func(cmd string, args ...string) *exec.Cmd {
+			t.Log(cmd, args)
+			stdIn, stdOut, stdErr = &buf, &buf, &buf
+
+			if cmd != editor {
+				t.Errorf("Expected command to be %s, got %s", editor, cmd)
+			}
+
+			if args[0] != "--wait" {
+				t.Errorf("Expected args to include --wait")
+			}
+
+			return exec.Command("cat", args...)
+		}
+
+		s.Edit(editor)
+
+		// get path to the gitignore file and cleanup
+		gitPath := strings.Replace(encPath, fmt.Sprintf("%s.enc", s.Environment), ".gitignore", 1)
+
+		t.Cleanup(func() {
+			os.Remove(encPath)
+			os.Remove(keyPath)
+			os.Remove(gitPath)
+		})
+	}
+}
+
+func TestEditAddsFFlag(t *testing.T) {
+	oldExecCmd := execCmd
+	defer func() { execCmd = oldExecCmd }()
+	s, encPath, keyPath := setupTest()
+
+	s.Initialize(os.Stdin)
+	buf := bytes.Buffer{}
+
+	editors := []string{"mvim", "gvim"}
+
+	for _, editor := range editors {
+		execCmd = func(cmd string, args ...string) *exec.Cmd {
+			t.Log(cmd, args)
+			stdIn, stdOut, stdErr = &buf, &buf, &buf
+
+			if cmd != editor {
+				t.Errorf("Expected command to be %s, got %s", editor, cmd)
+			}
+
+			if args[0] != "-f" {
+				t.Errorf("Expected args to include -f")
+			}
+
+			return exec.Command("cat", args...)
+		}
+
+		s.Edit(editor)
+
+		// get path to the gitignore file and cleanup
+		gitPath := strings.Replace(encPath, fmt.Sprintf("%s.enc", s.Environment), ".gitignore", 1)
+
+		t.Cleanup(func() {
+			os.Remove(encPath)
+			os.Remove(keyPath)
+			os.Remove(gitPath)
+		})
+	}
+}
+
 func TestSicherInitialize(t *testing.T) {
 
 	s, encPath, keyPath := setupTest()
