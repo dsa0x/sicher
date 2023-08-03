@@ -63,14 +63,29 @@ env SICHER_MASTER_KEY=`{YOUR_KEY_HERE}` sicher edit
 
 **_Optional flags:_**
 
-| flag    | description                                     | default | options             |
-| ------- | ----------------------------------------------- | ------- | ------------------- |
-| -env    | set the environment name                        | dev     |                     |
-| -path   | set the path to the credentials file            | .       |                     |
-| -editor | set the editor to use                           | vim     | vim, nano, vi, code |
-| -style  | set the style of the decrypted credentials file | dotenv  | dotenv or yaml      |
+| flag    | description                                     | default | options        |
+| ------- | ----------------------------------------------- | ------- | -------------- |
+| -env    | set the environment name                        | dev     |                |
+| -path   | set the path to the credentials file            | .       |                |
+| -editor | set the editor to use                           | vim     |                |
+| -style  | set the style of the decrypted credentials file | dotenv  | dotenv or yaml |
 
 This will create a temporary file, decrypt the credentials into it, and open it in your editor. The editor defaults to `vim`, but can be also set to other editors with the `-editor` flag. The temporary file is destroyed after each save, and the encrypted credentials file is updated with the new content.
+
+Known good editors are:
+
+- code
+- emacs
+- gvim
+- mvim
+- nano
+- nvim
+- subl
+- vi
+- vim
+- vimr
+
+Graphical editors require a flag to instruct the CLI to wait for the editor to exit. Additional graphical editors can be supported by adding the binary name and flag to the `waitFlagMap` in `sicher.go`. Most CLI editors should work out of the box, but your mileage may vary.
 
 Then in your app, you can use the `sicher` library to load the credentials:
 
